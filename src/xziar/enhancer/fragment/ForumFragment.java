@@ -16,7 +16,7 @@ public class ForumFragment extends Fragment
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState)
 	{
-		view = inflater.inflate(R.layout.fragment_tasklist, container, false);
+		view = inflater.inflate(R.layout.fragment_forum, container, false);
 		((TextView) view.findViewById(R.id.txt)).setText("Forum");
 		return view;
 	}

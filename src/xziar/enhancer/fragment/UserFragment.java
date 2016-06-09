@@ -16,7 +16,7 @@ public class UserFragment extends Fragment
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState)
 	{
-		view = inflater.inflate(R.layout.fragment_tasklist, container, false);
+		view = inflater.inflate(R.layout.fragment_user, container, false);
 		((TextView) view.findViewById(R.id.txt)).setText("User");
 		return view;
 	}
