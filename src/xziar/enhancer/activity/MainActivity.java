@@ -28,14 +28,14 @@ public class MainActivity extends AppCompatActivity
 	
 	private static Context appcontext;
 	
-	private UserBean user;
+	public static UserBean user;
 
 	private void initWidget()
 	{
 		fragMan = getFragmentManager();
-		tasklistFrag = new TaskListFragment();
-		forumFrag = new ForumFragment();
-		userFrag = new UserFragment();
+		tasklistFrag = new TaskListFragment(this);
+		forumFrag = new ForumFragment(this);
+		userFrag = new UserFragment(this);
 		FragmentTransaction fragTrans = fragMan.beginTransaction()
 				.add(R.id.main, tasklistFrag).add(R.id.main, forumFrag)
 				.add(R.id.main, userFrag);

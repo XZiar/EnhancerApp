@@ -1,5 +1,6 @@
 package xziar.enhancer.fragment;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,8 +11,14 @@ import xziar.enhancer.R;
 
 public class TaskListFragment extends Fragment
 {
+	private Activity act;
 	private View view;
 
+	public TaskListFragment(Activity act)
+	{
+		this.act = act;
+	}
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState)

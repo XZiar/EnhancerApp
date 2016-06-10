@@ -6,6 +6,11 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<dependencies>
+		<!-- <dependency>
+			<groupId>com.jakewharton</groupId>
+			<artifactId>butterknife-compiler</artifactId>
+			<version>8.0.1</version>
+		</dependency> -->
 		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
 			<artifactId>okhttp</artifactId>
