@@ -1,0 +1,132 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="xziar.enhancer.fragment.StuRegFragment" >
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp" >
+
+        <EditText
+            android:id="@+id/realname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="真实姓名" />
+    </android.support.design.widget.TextInputLayout>
+
+    <xziar.enhancer.widget.FloatLabelLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:hint="性别" >
+
+        <RadioGroup
+            android:id="@+id/sgender"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="40dp"
+            android:layout_marginStart="40dp"
+            android:orientation="horizontal" >
+
+            <RadioButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="20dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="男" />
+
+            <RadioButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="女" />
+        </RadioGroup>
+    </xziar.enhancer.widget.FloatLabelLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp" >
+
+        <EditText
+            android:id="@+id/id_person"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="身份证号" />
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp" >
+
+        <EditText
+            android:id="@+id/school"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="就读学校" />
+    </android.support.design.widget.TextInputLayout>
+
+    <xziar.enhancer.widget.FloatLabelLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:hint="入学时间" >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal" >
+
+            <NumberPicker
+                android:id="@+id/time_year"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="年"
+                android:textSize="18sp" />
+
+            <NumberPicker
+                android:id="@+id/time_month"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="月"
+                android:textSize="18sp" />
+        </LinearLayout>
+    </xziar.enhancer.widget.FloatLabelLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp" >
+
+        <EditText
+            android:id="@+id/id_student"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="学号" />
+    </android.support.design.widget.TextInputLayout>
+
+</LinearLayout>
