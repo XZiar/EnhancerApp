@@ -13,21 +13,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import xziar.enhancer.util.CommonHolder.OnItemClickListener;
 
-public class CommonAdapter<TD, TH extends CommonAdapter.CommonHolder<TD>>
-		extends RecyclerView.Adapter<TH> implements Comparator<TD>
+
+
+public class CommonAdapter<TD, TH extends CommonHolder<TD>>
+		extends RecyclerView.Adapter<TH>
+		implements Comparator<TD>, OnItemClickListener<TD>
 {
-	static abstract class CommonHolder<T> extends RecyclerView.ViewHolder
-	{
-		public CommonHolder(View itemView)
-		{
-			super(itemView);
-		}
-
-		abstract public void setData(T data);
-
-	}
-
+	private OnItemClickListener<TD> itemClick;
 	protected int resID;
 	private Constructor<?> THcon;
 	protected ArrayList<TD> datas = new ArrayList<>();
@@ -76,6 +70,7 @@ public class CommonAdapter<TD, TH extends CommonAdapter.CommonHolder<TD>>
 		{
 			@SuppressWarnings("unchecked")
 			TH holder = (TH) THcon.newInstance(view);
+			holder.setItemClick(this);
 			return holder;
 		}
 		catch (InstantiationException | IllegalAccessException
@@ -91,6 +86,18 @@ public class CommonAdapter<TD, TH extends CommonAdapter.CommonHolder<TD>>
 	public int compare(TD lhs, TD rhs)
 	{
 		return 0;
+	}
+
+	public void setItemClick(OnItemClickListener<TD> itemClick)
+	{
+		this.itemClick = itemClick;
+	}
+
+	@Override
+	public void OnClick(TD data)
+	{
+		if (itemClick != null)
+			itemClick.OnClick(data);
 	}
 
 }
