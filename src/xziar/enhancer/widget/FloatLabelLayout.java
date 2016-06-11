@@ -8,9 +8,11 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import xziar.enhancer.R;
+import xziar.enhancer.util.SizeUtil;
 
 public class FloatLabelLayout extends LinearLayout
 {
@@ -24,7 +26,7 @@ public class FloatLabelLayout extends LinearLayout
 		this.context = context;
 		setOrientation(LinearLayout.VERTICAL);
 		setGravity(Gravity.CENTER_VERTICAL);
-		((LayoutInflater) (getContext()
+		((LayoutInflater) (context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE)))
 						.inflate(R.layout.layout_float_label, this, true);
 		label = (TextView) findViewById(R.id.hintlabel);
@@ -36,6 +38,13 @@ public class FloatLabelLayout extends LinearLayout
 			hint = "HINT";
 		label.setText(hint);
 		ta.recycle();
+		final int pad = SizeUtil.dp2px(4);
+		setPadding(pad, 0, pad, pad);
+		ImageView divider = new ImageView(context);
+		divider.setImageResource(R.drawable.divider);
+		divider.setPadding(0, pad, 0, 0);
+		super.addView(divider, -1,
+				new LayoutParams(LayoutParams.MATCH_PARENT, pad + 1));
 	}
 
 	public FloatLabelLayout(Context context, AttributeSet attrs)
@@ -51,8 +60,13 @@ public class FloatLabelLayout extends LinearLayout
 	@Override
 	public void addView(View child, int index, ViewGroup.LayoutParams params)
 	{
+		int old = index;
 		if (index >= 0)
 			index++;
+		else
+			index = getChildCount() - 1;
+		Log.v("addView",
+				child.getClass().getName() + " : " + old + " to " + index);
 		super.addView(child, index, params);
 	}
 
