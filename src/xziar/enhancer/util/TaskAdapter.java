@@ -44,7 +44,7 @@ public class TaskAdapter extends CommonAdapter<TaskBean, TaskAdapter.TaskHolder>
 	public TaskAdapter(Context context)
 	{
 		super(context, TaskHolder.class);
-		resID = R.layout.item_task;
+		resID.add(R.layout.item_task);
 	}
 
 	@Override

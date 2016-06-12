@@ -3,7 +3,6 @@ package xziar.enhancer.util;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -17,14 +16,14 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import xziar.enhancer.util.CommonHolder.OnItemClickListener;
 
-public class CommonAdapter<TD, TH extends CommonHolder<TD>>
-		extends RecyclerView.Adapter<TH>
-		implements Comparator<TD>, OnClickListener
+public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends
+		RecyclerView.Adapter<TH> implements Comparator<TD>, OnClickListener
 {
 	private OnItemClickListener<TD> itemClick;
-	protected int resID;
+	protected ArrayList<Integer> resID = new ArrayList<>();
 	private Constructor<?> THcon;
-	private HashMap<TH, Integer> mapping = new HashMap<>();
+	private HashMap<TH, TD> mapping = new HashMap<>();
+	private HashMap<TD, Integer> types = new HashMap<>();
 	protected ArrayList<TD> datas = new ArrayList<>();
 	protected LayoutInflater inflater;
 
@@ -49,6 +48,14 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>>
 	}
 
 	@Override
+	public int getItemViewType(int position)
+	{
+		TD item = datas.get(position);
+		Integer type = types.get(item);
+		return type == null ? 0 : type;
+	}
+
+	@Override
 	public int getItemCount()
 	{
 		return datas.size();
@@ -57,15 +64,17 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>>
 	@Override
 	public void onBindViewHolder(TH holder, int position)
 	{
-		mapping.put(holder, position);
+		// Log.v("ViewHolder", "pos " + position + " , bind ");
 		TD item = datas.get(position);
+		mapping.put(holder, item);
 		holder.setData(item);
 	}
 
 	@Override
-	public TH onCreateViewHolder(ViewGroup parent, int position)
+	public TH onCreateViewHolder(ViewGroup parent, int viewType)
 	{
-		View view = inflater.inflate(resID, parent, false);
+		Log.v("ViewHolder", "type " + viewType);
+		View view = inflater.inflate(resID.get(viewType), parent, false);
 		view.setOnClickListener(this);
 		try
 		{
@@ -98,9 +107,24 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>>
 	{
 		@SuppressWarnings("unchecked")
 		TH holder = (TH) v.getTag();
-		TD data = datas.get(mapping.get(holder));
+		TD data = mapping.get(holder);
 		if (itemClick != null)
 			itemClick.OnClick(data);
 	}
 
+	public int changeViewType(TD item)
+	{
+		if (!datas.contains(item))
+		{
+			types.remove(item);
+			return -1;
+		}
+		Integer type = types.get(item);
+		if (type == null)
+			type = 0;
+		type = (type + 1) % resID.size();
+		types.put(item, type);
+		notifyDataSetChanged();
+		return type;
+	}
 }

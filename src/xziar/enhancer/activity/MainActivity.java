@@ -12,6 +12,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import xziar.enhancer.R;
 import xziar.enhancer.fragment.ForumFragment;
+import xziar.enhancer.fragment.GroupFragment;
 import xziar.enhancer.fragment.TaskListFragment;
 import xziar.enhancer.fragment.UserFragment;
 import xziar.enhancer.pojo.UserBean;
@@ -24,10 +25,11 @@ public class MainActivity extends AppCompatActivity
 	private Fragment currentFrag;
 	private TaskListFragment tasklistFrag;
 	private ForumFragment forumFrag;
+	private GroupFragment groupFrag;
 	private UserFragment userFrag;
-	
+
 	private static Context appcontext;
-	
+
 	public static UserBean user;
 
 	private void initWidget()
@@ -35,19 +37,22 @@ public class MainActivity extends AppCompatActivity
 		fragMan = getFragmentManager();
 		tasklistFrag = new TaskListFragment(this);
 		forumFrag = new ForumFragment(this);
+		groupFrag = new GroupFragment(this);
 		userFrag = new UserFragment(this);
 		FragmentTransaction fragTrans = fragMan.beginTransaction()
 				.add(R.id.main, tasklistFrag).add(R.id.main, forumFrag)
-				.add(R.id.main, userFrag);
-		fragTrans.hide(currentFrag = tasklistFrag).hide(forumFrag).hide(userFrag).commit();
-		
-		bottombar.setMaxFixedTabs(2);
+				.add(R.id.main, groupFrag).add(R.id.main, userFrag);
+		fragTrans.hide(currentFrag = tasklistFrag).hide(forumFrag)
+				.hide(groupFrag).hide(userFrag).commit();
+
+		bottombar.setMaxFixedTabs(3);
 		bottombar.setItems(R.menu.bottombar);
 		bottombar.setOnMenuTabClickListener(this);
 		bottombar.mapColorForTab(0,
 				ContextCompat.getColor(this, R.color.colorAccent));
 		bottombar.mapColorForTab(1, 0xFF5D4037);
 		bottombar.mapColorForTab(2, "#7B1FA2");
+		bottombar.mapColorForTab(3, "#E43F3F");
 	}
 
 	@Override
@@ -56,7 +61,7 @@ public class MainActivity extends AppCompatActivity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		appcontext = getApplicationContext();
-		
+
 		bottombar = BottomBar.attach(this, savedInstanceState);
 		initWidget();
 
@@ -87,6 +92,9 @@ public class MainActivity extends AppCompatActivity
 			break;
 		case R.id.forum:
 			changeFrag(forumFrag);
+			break;
+		case R.id.group:
+			changeFrag(groupFrag);
 			break;
 		case R.id.user:
 			changeFrag(userFrag);
