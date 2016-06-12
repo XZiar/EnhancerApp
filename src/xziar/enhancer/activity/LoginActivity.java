@@ -10,21 +10,29 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import xziar.enhancer.R;
+import xziar.enhancer.util.ViewInject;
+import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.widget.WaitDialog;
 
 public class LoginActivity extends Activity implements OnClickListener
 {
 	private static final int REQUESTCODE_REGISTER = 1;
-	private EditText un, pwd;
+	@BindView(R.id.username)
+	private EditText un;
+	@BindView(R.id.password)
+	private EditText pwd;
+	@BindView(R.id.btn_login)
 	private Button btn_login;
+	@BindView(R.id.link_register)
 	private TextView txt_reg;
 
 	private void initWidget()
 	{
-		un = (EditText) findViewById(R.id.username);
-		pwd = (EditText) findViewById(R.id.password);
-		btn_login = (Button) findViewById(R.id.btn_login);
-		txt_reg = (TextView) findViewById(R.id.link_register);
+		// un = (EditText) findViewById(R.id.username);
+		// pwd = (EditText) findViewById(R.id.password);
+		// btn_login = (Button) findViewById(R.id.btn_login);
+		// txt_reg = (TextView) findViewById(R.id.link_register);
+		ViewInject.inject(this);
 		btn_login.setOnClickListener(this);
 		txt_reg.setOnClickListener(this);
 	}
@@ -55,7 +63,7 @@ public class LoginActivity extends Activity implements OnClickListener
 			}, 3000);
 		}
 		else if (v == txt_reg)
-		{	
+		{
 			Intent it = new Intent(this, RegisterActivity.class);
 			startActivityForResult(it, REQUESTCODE_REGISTER);
 		}

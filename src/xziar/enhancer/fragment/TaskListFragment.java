@@ -59,7 +59,6 @@ public class TaskListFragment extends Fragment
 			task.setTime_start(new Date(116, 2, 17).getTime());
 			ds.add(task);
 		}
-		Log.v("init data", "ds size : " + ds.size());
 		adapter.refresh(ds);
 	}
 

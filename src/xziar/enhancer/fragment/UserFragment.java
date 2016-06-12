@@ -15,17 +15,28 @@ import xziar.enhancer.activity.LoginActivity;
 import xziar.enhancer.activity.MainActivity;
 import xziar.enhancer.pojo.UserBean;
 import xziar.enhancer.util.CircleImageUtil;
+import xziar.enhancer.util.ViewInject;
+import xziar.enhancer.util.ViewInject.BindView;
+import xziar.enhancer.util.ViewInject.ObjView;
 import xziar.enhancer.widget.NumberBox;
 
+@ObjView("view")
 public class UserFragment extends Fragment implements OnClickListener
 {
 	private static final int REQUESTCODE_LOGIN = 1;
 	private Activity act;
 	private View view;
 	private UserBean user;
+	@BindView(R.id.headimg)
 	private ImageView headimg;
+	@BindView(R.id.name)
 	private TextView name;
-	private NumberBox score, task_finish, task_ongoing;
+	@BindView(R.id.score)
+	private NumberBox score;
+	@BindView(R.id.task_finish)
+	private NumberBox task_finish;
+	@BindView(R.id.task_ongoing)
+	private NumberBox task_ongoing;
 
 	public UserFragment(Activity act)
 	{
@@ -37,11 +48,7 @@ public class UserFragment extends Fragment implements OnClickListener
 			Bundle savedInstanceState)
 	{
 		view = inflater.inflate(R.layout.fragment_user, container, false);
-		headimg = (ImageView) view.findViewById(R.id.headimg);
-		name = (TextView) view.findViewById(R.id.name);
-		score = (NumberBox) view.findViewById(R.id.score);
-		task_finish = (NumberBox) view.findViewById(R.id.task_finish);
-		task_ongoing = (NumberBox) view.findViewById(R.id.task_ongoing);
+		ViewInject.inject(this);
 		headimg.setOnClickListener(this);
 		return view;
 	}

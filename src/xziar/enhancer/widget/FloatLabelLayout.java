@@ -33,9 +33,8 @@ public class FloatLabelLayout extends LinearLayout
 		TypedArray ta = context.obtainStyledAttributes(attrs,
 				new int[] { android.R.attr.hint }, 0, 0);
 		String hint = ta.getString(0);
-		Log.i("FloatLabelLayout", hint);
 		if (hint == null)
-			hint = "HINT";
+			hint = "Label";
 		label.setText(hint);
 		ta.recycle();
 		final int pad = SizeUtil.dp2px(4);
@@ -60,13 +59,10 @@ public class FloatLabelLayout extends LinearLayout
 	@Override
 	public void addView(View child, int index, ViewGroup.LayoutParams params)
 	{
-		int old = index;
 		if (index >= 0)
 			index++;
 		else
 			index = getChildCount() - 1;
-		Log.v("addView",
-				child.getClass().getName() + " : " + old + " to " + index);
 		super.addView(child, index, params);
 	}
 

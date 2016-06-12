@@ -14,12 +14,22 @@ import android.widget.Toast;
 import xziar.enhancer.R;
 import xziar.enhancer.fragment.CpnRegFragment;
 import xziar.enhancer.fragment.StuRegFragment;
+import xziar.enhancer.util.ViewInject;
+import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.widget.WaitDialog;
 
 public class RegisterActivity extends Activity implements OnClickListener
 {
-	private EditText un, pwd;
-	private Button btn_register, btn_stu, btn_cpn;
+	@BindView(R.id.username)
+	private EditText un;
+	@BindView(R.id.password)
+	private EditText pwd;
+	@BindView(R.id.btn_register)
+	private Button btn_register;
+	@BindView(R.id.btn_stu)
+	private Button btn_stu;
+	@BindView(R.id.btn_cpn)
+	private Button btn_cpn;
 	private FragmentManager fragMan;
 	private Fragment currentFrag;
 	private StuRegFragment stuFrag;
@@ -27,13 +37,14 @@ public class RegisterActivity extends Activity implements OnClickListener
 
 	private void initWidget()
 	{
-		un = (EditText) findViewById(R.id.username);
-		pwd = (EditText) findViewById(R.id.password);
-		btn_stu = (Button) findViewById(R.id.btn_stu);
+		// un = (EditText) findViewById(R.id.username);
+		// pwd = (EditText) findViewById(R.id.password);
+		// btn_stu = (Button) findViewById(R.id.btn_stu);
+		// btn_cpn = (Button) findViewById(R.id.btn_cpn);
+		// btn_register = (Button) findViewById(R.id.btn_register);
+		ViewInject.inject(this);
 		btn_stu.setOnClickListener(this);
-		btn_cpn = (Button) findViewById(R.id.btn_cpn);
 		btn_cpn.setOnClickListener(this);
-		btn_register = (Button) findViewById(R.id.btn_register);
 		btn_register.setOnClickListener(this);
 
 		fragMan = getFragmentManager();
@@ -70,13 +81,13 @@ public class RegisterActivity extends Activity implements OnClickListener
 				}
 			}, 3000);
 		}
-		else if(v == btn_stu)
+		else if (v == btn_stu)
 		{
 			btn_stu.setBackgroundResource(R.color.colorAccent);
 			btn_cpn.setBackgroundResource(R.color.iron);
 			changeFrag(stuFrag);
 		}
-		else if(v == btn_cpn)
+		else if (v == btn_cpn)
 		{
 			btn_cpn.setBackgroundResource(R.color.colorAccent);
 			btn_stu.setBackgroundResource(R.color.iron);
