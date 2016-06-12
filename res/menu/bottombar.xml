@@ -10,6 +10,10 @@
         android:icon="@drawable/icon_forum"
         android:title="论坛"/>
     <item
+        android:id="@+id/group"
+        android:icon="@drawable/icon_group"
+        android:title="团队"/>
+    <item
         android:id="@+id/user"
         android:icon="@drawable/icon_user"
         android:title="我"/>

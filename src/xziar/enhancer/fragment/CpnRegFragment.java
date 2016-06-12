@@ -6,25 +6,25 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import xziar.enhancer.R;
+import xziar.enhancer.pojo.UserBean;
 
-public class ForumFragment extends Fragment
+public class CpnRegFragment extends Fragment
 {
 	private Activity act;
 	private View view;
-
-	public ForumFragment(Activity act)
+	private UserBean user;
+	
+	public CpnRegFragment(Activity act)
 	{
 		this.act = act;
 	}
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState)
 	{
-		view = inflater.inflate(R.layout.fragment_forum, container, false);
-		((TextView) view.findViewById(R.id.txt)).setText("Forum");
+		view = inflater.inflate(R.layout.fragment_cpn_reg, container, false);
 		return view;
 	}
 
