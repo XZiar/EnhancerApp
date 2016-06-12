@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="NumberBox">
+        <attr name="android:label" />
+        <attr name="android:text" />
+        <attr name="android:textSize" />
+    </declare-styleable>
+
+</resources>

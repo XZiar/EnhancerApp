@@ -41,7 +41,7 @@ public class FloatLabelLayout extends LinearLayout
 		final int pad = SizeUtil.dp2px(4);
 		setPadding(pad, 0, pad, pad);
 		ImageView divider = new ImageView(context);
-		divider.setImageResource(R.drawable.divider);
+		divider.setImageResource(R.drawable.divider_horizontal);
 		divider.setPadding(0, pad, 0, 0);
 		super.addView(divider, -1,
 				new LayoutParams(LayoutParams.MATCH_PARENT, pad + 1));

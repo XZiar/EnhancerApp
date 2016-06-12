@@ -64,7 +64,6 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends
 	@Override
 	public void onBindViewHolder(TH holder, int position)
 	{
-		// Log.v("ViewHolder", "pos " + position + " , bind ");
 		TD item = datas.get(position);
 		mapping.put(holder, item);
 		holder.setData(item);
@@ -73,7 +72,6 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends
 	@Override
 	public TH onCreateViewHolder(ViewGroup parent, int viewType)
 	{
-		Log.v("ViewHolder", "type " + viewType);
 		View view = inflater.inflate(resID.get(viewType), parent, false);
 		view.setOnClickListener(this);
 		try

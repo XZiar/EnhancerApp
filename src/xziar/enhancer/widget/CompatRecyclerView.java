@@ -21,7 +21,7 @@ public class CompatRecyclerView extends RecyclerView
 		setLayoutManager(new LinearLayoutManager(context,
 				LinearLayoutManager.VERTICAL, false));
 		this.addItemDecoration(
-				new DividerItemDecoration(context, R.drawable.divider));
+				new DividerItemDecoration(context, R.drawable.divider_horizontal));
 	}
 
 	public CompatRecyclerView(Context context, AttributeSet attrs)
@@ -57,7 +57,7 @@ class DividerItemDecoration extends RecyclerView.ItemDecoration
 	}
 
 	@Override
-	public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state)
+	public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state)
 	{
 		int left = parent.getPaddingLeft();
 		int right = parent.getWidth() - parent.getPaddingRight();
