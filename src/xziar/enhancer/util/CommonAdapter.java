@@ -6,24 +6,25 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import xziar.enhancer.util.CommonHolder.OnItemClickListener;
 
-
-
 public class CommonAdapter<TD, TH extends CommonHolder<TD>>
 		extends RecyclerView.Adapter<TH>
-		implements Comparator<TD>, OnItemClickListener<TD>
+		implements Comparator<TD>, OnClickListener
 {
 	private OnItemClickListener<TD> itemClick;
 	protected int resID;
 	private Constructor<?> THcon;
+	private HashMap<TH, Integer> mapping = new HashMap<>();
 	protected ArrayList<TD> datas = new ArrayList<>();
 	protected LayoutInflater inflater;
 
@@ -40,11 +41,9 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>>
 		}
 	}
 
-	public void refresh(Collection<? extends TD> datas)
+	public void refresh(ArrayList<TD> datas)
 	{
-		this.datas.clear();
-		this.datas.addAll(datas);
-		Log.v("refresh", "datas size : " + this.datas.size());
+		this.datas = datas;
 		Collections.sort(this.datas, this);
 		notifyDataSetChanged();
 	}
@@ -58,6 +57,7 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>>
 	@Override
 	public void onBindViewHolder(TH holder, int position)
 	{
+		mapping.put(holder, position);
 		TD item = datas.get(position);
 		holder.setData(item);
 	}
@@ -66,11 +66,11 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>>
 	public TH onCreateViewHolder(ViewGroup parent, int position)
 	{
 		View view = inflater.inflate(resID, parent, false);
+		view.setOnClickListener(this);
 		try
 		{
 			@SuppressWarnings("unchecked")
 			TH holder = (TH) THcon.newInstance(view);
-			holder.setItemClick(this);
 			return holder;
 		}
 		catch (InstantiationException | IllegalAccessException
@@ -94,8 +94,11 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>>
 	}
 
 	@Override
-	public void OnClick(TD data)
+	public void onClick(View v)
 	{
+		@SuppressWarnings("unchecked")
+		TH holder = (TH) v.getTag();
+		TD data = datas.get(mapping.get(holder));
 		if (itemClick != null)
 			itemClick.OnClick(data);
 	}

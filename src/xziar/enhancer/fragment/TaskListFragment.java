@@ -24,6 +24,7 @@ public class TaskListFragment extends Fragment
 	private View view;
 	private RecyclerView list;
 	private TaskAdapter adapter;
+	ArrayList<TaskBean> ds;
 
 	public TaskListFragment(Activity act)
 	{
@@ -32,7 +33,7 @@ public class TaskListFragment extends Fragment
 
 	private void initData()
 	{
-		ArrayList<TaskBean> ds = new ArrayList<>();
+		ds = new ArrayList<>();
 		TaskBean task;
 		{
 			task = new TaskBean();
@@ -87,6 +88,17 @@ public class TaskListFragment extends Fragment
 	public void OnClick(TaskBean data)
 	{
 		Toast.makeText(act, data.getTitle(), Toast.LENGTH_SHORT).show();
+		
+		{
+			TaskBean task = new TaskBean();
+			task.setTitle(System.currentTimeMillis() + "");
+			task.setLauncher("company");
+			task.setApplycount(2);
+			task.setTime_start(new Date(116, 3, 1).getTime());
+			
+			ds.add(task);
+			adapter.refresh(ds);
+		}
 	}
 
 }
