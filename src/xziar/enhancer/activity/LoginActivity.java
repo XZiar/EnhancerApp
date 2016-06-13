@@ -28,10 +28,6 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 
 	private void initWidget()
 	{
-		// un = (EditText) findViewById(R.id.username);
-		// pwd = (EditText) findViewById(R.id.password);
-		// btn_login = (Button) findViewById(R.id.btn_login);
-		// txt_reg = (TextView) findViewById(R.id.link_register);
 		ViewInject.inject(this);
 		btn_login.setOnClickListener(this);
 		txt_reg.setOnClickListener(this);

@@ -2,13 +2,18 @@ package xziar.enhancer.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.SocketTimeoutException;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -23,7 +28,7 @@ import xziar.enhancer.activity.MainActivity;
 
 public class NetworkUtil
 {
-	private static final String LogTag;
+	static final String LogTag;
 	private static final Context context;
 	private static final OkHttpClient client;
 	private static final Proxy proxy;
@@ -95,4 +100,109 @@ public class NetworkUtil
 		return true;
 	}
 
+	public static boolean Test(Callback callback)
+	{
+		RequestBody formBody = new FormBody.Builder().add("un", "student")
+				.add("pwd", "student").build();
+		Request request = new Request.Builder().url(baseUrl + "/login")
+				.post(formBody).build();
+		client.newCall(request).enqueue(callback);
+		return true;
+	}
+
+	public static class CallBacker implements Callback
+	{
+		public static class UIHandler extends Handler
+		{
+			private WeakReference<CallBacker> ref;
+
+			public UIHandler(CallBacker cb)
+			{
+				super(Looper.getMainLooper());
+				ref = new WeakReference<CallBacker>(cb);
+			}
+
+			@Override
+			public void handleMessage(Message msg)
+			{
+				CallBacker cb = ref.get();
+				switch (RetCode.values()[msg.what])
+				{
+				case Timeout:
+					cb.onTimeout();
+					break;
+				case Fail:
+					cb.onFail((Exception) msg.obj);
+					break;
+				case Success:
+					cb.onSuccess((String) msg.obj);
+					break;
+				}
+			}
+		}
+
+		static enum RetCode
+		{
+			Timeout, Fail, Success,
+		}
+
+		protected UIHandler handler;
+
+		public CallBacker()
+		{
+			handler = new UIHandler(this);
+		}
+
+		@Override
+		public final void onFailure(Call call, final IOException e)
+		{
+			Message msg = Message.obtain(handler);
+			Class<?> clz = e.getClass();
+			if (clz == SocketTimeoutException.class)
+			{
+				msg.what = RetCode.Timeout.ordinal();
+				handler.sendMessage(msg);
+			}
+			else
+			{
+				msg.what = RetCode.Fail.ordinal();
+				msg.obj = e;
+				handler.sendMessage(msg);
+			}
+		}
+
+		protected void onTimeout()
+		{
+			Log.e(LogTag, "HTTP timeout");
+		};
+
+		protected void onFail(Exception e)
+		{
+			Log.e(LogTag, "HTTP fail", e);
+		};
+
+		protected void onSuccess(String data)
+		{
+			Log.d(LogTag, "response data");
+		};
+
+		@Override
+		public final void onResponse(Call call, final Response response)
+		{
+			Message msg = Message.obtain(handler);
+			try
+			{
+				msg.obj = response.body().string();
+				msg.what = RetCode.Success.ordinal();
+				handler.sendMessage(msg);
+			}
+			catch (IOException e)
+			{
+				msg.obj = e;
+				msg.what = RetCode.Fail.ordinal();
+				handler.sendMessage(msg);
+			}
+
+		};
+	}
 }
