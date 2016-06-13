@@ -16,6 +16,7 @@ import xziar.enhancer.fragment.GroupFragment;
 import xziar.enhancer.fragment.TaskListFragment;
 import xziar.enhancer.fragment.UserFragment;
 import xziar.enhancer.pojo.UserBean;
+import xziar.enhancer.util.NetworkUtil;
 
 public class MainActivity extends AppCompatActivity
 		implements OnMenuTabClickListener
@@ -61,10 +62,9 @@ public class MainActivity extends AppCompatActivity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		appcontext = getApplicationContext();
-
 		bottombar = BottomBar.attach(this, savedInstanceState);
 		initWidget();
-
+		NetworkUtil.Test();
 	}
 
 	@Override

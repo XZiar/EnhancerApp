@@ -1,8 +1,8 @@
 package xziar.enhancer.activity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -14,7 +14,7 @@ import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.widget.WaitDialog;
 
-public class LoginActivity extends Activity implements OnClickListener
+public class LoginActivity extends AppCompatActivity implements OnClickListener
 {
 	private static final int REQUESTCODE_REGISTER = 1;
 	@BindView(R.id.username)

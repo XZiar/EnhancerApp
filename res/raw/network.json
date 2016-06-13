@@ -1,0 +1,13 @@
+{
+	"scheme": "http",
+    "host": "192.168.16.1",
+    "port": 8080,
+    "base": "Enhancer",
+    "proxy":
+	{
+		"type": "HTTP",
+	    "host": "192.168.16.1",
+	    "port": 8808
+	}
+
+}

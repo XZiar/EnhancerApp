@@ -1,11 +1,11 @@
 package xziar.enhancer.activity;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -18,7 +18,7 @@ import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.widget.WaitDialog;
 
-public class RegisterActivity extends Activity implements OnClickListener
+public class RegisterActivity extends AppCompatActivity implements OnClickListener
 {
 	@BindView(R.id.username)
 	private EditText un;
