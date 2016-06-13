@@ -10,15 +10,12 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.Toast;
 import xziar.enhancer.R;
 import xziar.enhancer.fragment.ForumFragment;
 import xziar.enhancer.fragment.GroupFragment;
 import xziar.enhancer.fragment.TaskListFragment;
 import xziar.enhancer.fragment.UserFragment;
 import xziar.enhancer.pojo.UserBean;
-import xziar.enhancer.util.NetworkUtil;
-import xziar.enhancer.util.NetworkUtil.CallBacker;
 
 public class MainActivity extends AppCompatActivity
 		implements OnMenuTabClickListener
@@ -66,31 +63,6 @@ public class MainActivity extends AppCompatActivity
 		appcontext = getApplicationContext();
 		bottombar = BottomBar.attach(this, savedInstanceState);
 		initWidget();
-		NetworkUtil.Test(new CallBacker()
-		{
-			@Override
-			protected void onTimeout()
-			{
-				super.onTimeout();
-				Toast.makeText(appcontext, "Timeout", Toast.LENGTH_SHORT)
-						.show();
-			}
-
-			@Override
-			protected void onFail(Exception e)
-			{
-				super.onFail(e);
-				Toast.makeText(appcontext, e.getClass().getName(),
-						Toast.LENGTH_SHORT).show();
-			}
-
-			@Override
-			protected void onSuccess(String data)
-			{
-				super.onSuccess(data);
-				Toast.makeText(appcontext, data, Toast.LENGTH_SHORT).show();
-			}
-		});
 	}
 
 	@Override

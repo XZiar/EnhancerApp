@@ -1,5 +1,7 @@
 package xziar.enhancer.activity;
 
+import java.util.HashMap;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import xziar.enhancer.R;
 import xziar.enhancer.util.ViewInject;
+import xziar.enhancer.util.NetworkUtil.NetTask;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.widget.WaitDialog;
 
@@ -26,11 +29,14 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 	@BindView(R.id.link_register)
 	private TextView txt_reg;
 
+	private WaitDialog waitDialog;
+
 	private void initWidget()
 	{
 		ViewInject.inject(this);
 		btn_login.setOnClickListener(this);
 		txt_reg.setOnClickListener(this);
+		waitDialog = new WaitDialog(this, " «Î…‘∫Û... ...");
 	}
 
 	@Override
@@ -46,17 +52,10 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 	{
 		if (v == btn_login)
 		{
-			final WaitDialog waitDialog = new WaitDialog(this,
-					un.getText().toString() + " & " + pwd.getText().toString()
-							+ " «Î…‘∫Û... ...");
-			waitDialog.show();
-			new android.os.Handler().postDelayed(new Runnable()
-			{
-				public void run()
-				{
-					waitDialog.dismiss();
-				}
-			}, 3000);
+			HashMap<String, Object> data = new HashMap<>();
+			data.put("un", un.getText());
+			data.put("pwd", pwd.getText());
+			loginTask.post(data);
 		}
 		else if (v == txt_reg)
 		{
@@ -67,4 +66,39 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 			Toast.makeText(this, v.getClass().getName(), Toast.LENGTH_SHORT)
 					.show();
 	}
+
+	private NetTask loginTask = new NetTask("/login")
+	{
+		@Override
+		protected void onStart()
+		{
+			waitDialog.show();
+		}
+
+		@Override
+		protected void onTimeout()
+		{
+			super.onTimeout();
+			waitDialog.dismiss();
+			Toast.makeText(LoginActivity.this, "Timeout", Toast.LENGTH_SHORT)
+					.show();
+		}
+
+		@Override
+		protected void onFail(final Exception e)
+		{
+			super.onFail(e);
+			waitDialog.dismiss();
+			Toast.makeText(LoginActivity.this, e.getClass().getName(),
+					Toast.LENGTH_SHORT).show();
+		}
+
+		@Override
+		protected void onSuccess(final String data)
+		{
+			super.onSuccess(data);
+			waitDialog.dismiss();
+			Toast.makeText(LoginActivity.this, data, Toast.LENGTH_SHORT).show();
+		}
+	};
 }

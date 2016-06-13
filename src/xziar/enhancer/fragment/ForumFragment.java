@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import xziar.enhancer.R;
 import xziar.enhancer.util.NetworkUtil;
-import xziar.enhancer.util.NetworkUtil.CallBacker;
+import xziar.enhancer.util.NetworkUtil.NetTask;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.util.ViewInject.ObjView;
@@ -50,11 +50,11 @@ public class ForumFragment extends Fragment
 		super.onHiddenChanged(hidden);
 		if (!hidden)
 		{
-			NetworkUtil.Test(cb);
+			NetworkUtil.Test(task);
 		}
 	}
 
-	private CallBacker cb = new CallBacker()
+	private NetTask task = new NetTask("")
 	{
 		@Override
 		protected void onTimeout()
@@ -79,6 +79,5 @@ public class ForumFragment extends Fragment
 			super.onSuccess(data);
 			txt.setText(txt.getText().toString() + "\nresponse:\n" + data);
 		}
-
 	};
 }

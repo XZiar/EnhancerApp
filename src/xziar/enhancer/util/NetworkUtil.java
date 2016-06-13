@@ -6,6 +6,7 @@ import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketTimeoutException;
+import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -28,7 +29,7 @@ import xziar.enhancer.activity.MainActivity;
 
 public class NetworkUtil
 {
-	static final String LogTag;
+	static final String LogTag = "NetworkUtil";
 	private static final Context context;
 	private static final OkHttpClient client;
 	private static final Proxy proxy;
@@ -36,11 +37,8 @@ public class NetworkUtil
 
 	static
 	{
-		LogTag = "NetworkUtil";
 		context = MainActivity.getAppContext();
-
 		InputStream ins = context.getResources().openRawResource(R.raw.network);
-
 		JSONObject data = new JSONObject();
 		try
 		{
@@ -56,9 +54,7 @@ public class NetworkUtil
 		baseUrl = new HttpUrl.Builder().scheme(data.getString("scheme"))
 				.host(data.getString("host")).port(data.getIntValue("port"))
 				.addPathSegment(data.getString("base")).build();
-		// url = new HttpUrl.Builder().scheme("http").host("120.27.106.188")
-		// .port(8088).addPathSegment("RealTasker").build();
-		Log.d(LogTag, "baseUrl : " + baseUrl.toString());
+		Log.d(LogTag, "baseUrl : " + baseUrl);
 
 		JSONObject JOproxy = data.getJSONObject("proxy");
 		if (JOproxy != null)
@@ -76,81 +72,85 @@ public class NetworkUtil
 		}
 	}
 
-	public static boolean Test()
-	{
-		RequestBody formBody = new FormBody.Builder().add("un", "student")
-				.add("pwd", "student").build();
-		Request request = new Request.Builder().url(baseUrl + "/login")
-				.post(formBody).build();
-		client.newCall(request).enqueue(new Callback()
-		{
-			@Override
-			public void onFailure(Call call, IOException e)
-			{
-				Log.e(LogTag, "Test Failure", e);
-			}
-
-			@Override
-			public void onResponse(Call call, Response response)
-					throws IOException
-			{
-				Log.d(LogTag, "Test Response\n" + response.body().string());
-			}
-		});
-		return true;
-	}
-
-	public static boolean Test(Callback callback)
+	public static void Test(Callback callback)
 	{
 		RequestBody formBody = new FormBody.Builder().add("un", "student")
 				.add("pwd", "student").build();
 		Request request = new Request.Builder().url(baseUrl + "/login")
 				.post(formBody).build();
 		client.newCall(request).enqueue(callback);
-		return true;
 	}
 
-	public static class CallBacker implements Callback
+	public static class NetCBHandler extends Handler
 	{
-		public static class UIHandler extends Handler
+		private WeakReference<NetTask> ref;
+
+		public NetCBHandler(NetTask cb)
 		{
-			private WeakReference<CallBacker> ref;
-
-			public UIHandler(CallBacker cb)
-			{
-				super(Looper.getMainLooper());
-				ref = new WeakReference<CallBacker>(cb);
-			}
-
-			@Override
-			public void handleMessage(Message msg)
-			{
-				CallBacker cb = ref.get();
-				switch (RetCode.values()[msg.what])
-				{
-				case Timeout:
-					cb.onTimeout();
-					break;
-				case Fail:
-					cb.onFail((Exception) msg.obj);
-					break;
-				case Success:
-					cb.onSuccess((String) msg.obj);
-					break;
-				}
-			}
+			super(Looper.getMainLooper());
+			ref = new WeakReference<NetTask>(cb);
 		}
 
+		@Override
+		public void handleMessage(Message msg)
+		{
+			NetTask cb = ref.get();
+			if (cb == null)
+				return;
+			switch (NetTask.RetCode.values()[msg.what])
+			{
+			case Timeout:
+				cb.onTimeout();
+				break;
+			case Fail:
+				cb.onFail((Exception) msg.obj);
+				break;
+			case Success:
+				cb.onSuccess((String) msg.obj);
+				break;
+			}
+		}
+	}
+
+	public static class NetTask implements Callback
+	{
 		static enum RetCode
 		{
 			Timeout, Fail, Success,
 		}
 
-		protected UIHandler handler;
+		protected NetCBHandler handler;
+		protected final String url;
 
-		public CallBacker()
+		public NetTask(String addr)
 		{
-			handler = new UIHandler(this);
+			handler = new NetCBHandler(this);
+			url = baseUrl + addr;
+		}
+
+		public <T> void post(Map<String, T> form)
+		{
+			FormBody.Builder fbBuilder = new FormBody.Builder();
+			for (Map.Entry<String, T> e : form.entrySet())
+			{
+				String val = (e.getValue() == null ? ""
+						: e.getValue().toString());
+				fbBuilder.add(e.getKey(), val);
+			}
+			RequestBody formBody = fbBuilder.build();
+			Request request = new Request.Builder().url(url).post(formBody)
+					.build();
+			run(request);
+		}
+
+		public void get()
+		{
+		}
+
+		protected final void run(Request request)
+		{
+			client.newCall(request).enqueue(this);
+			onStart();
 		}
 
 		@Override
@@ -161,15 +161,35 @@ public class NetworkUtil
 			if (clz == SocketTimeoutException.class)
 			{
 				msg.what = RetCode.Timeout.ordinal();
-				handler.sendMessage(msg);
 			}
 			else
 			{
 				msg.what = RetCode.Fail.ordinal();
 				msg.obj = e;
-				handler.sendMessage(msg);
 			}
+			msg.sendToTarget();
 		}
+
+		@Override
+		public final void onResponse(Call call, final Response response)
+		{
+			Message msg = Message.obtain(handler);
+			try
+			{
+				msg.obj = response.body().string();
+				msg.what = RetCode.Success.ordinal();
+			}
+			catch (IOException e)
+			{
+				msg.obj = e;
+				msg.what = RetCode.Fail.ordinal();
+			}
+			msg.sendToTarget();
+		};
+
+		protected void onStart()
+		{
+		};
 
 		protected void onTimeout()
 		{
@@ -183,26 +203,6 @@ public class NetworkUtil
 
 		protected void onSuccess(String data)
 		{
-			Log.d(LogTag, "response data");
-		};
-
-		@Override
-		public final void onResponse(Call call, final Response response)
-		{
-			Message msg = Message.obtain(handler);
-			try
-			{
-				msg.obj = response.body().string();
-				msg.what = RetCode.Success.ordinal();
-				handler.sendMessage(msg);
-			}
-			catch (IOException e)
-			{
-				msg.obj = e;
-				msg.what = RetCode.Fail.ordinal();
-				handler.sendMessage(msg);
-			}
-
 		};
 	}
 }

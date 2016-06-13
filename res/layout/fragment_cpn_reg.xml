@@ -15,7 +15,8 @@
             android:id="@+id/realname"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="公司名" />
+            android:hint="公司名"
+            android:singleLine="true" />
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
@@ -28,7 +29,8 @@
             android:id="@+id/name_legal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="负责人姓名" />
+            android:hint="负责人姓名"
+            android:singleLine="true" />
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
@@ -41,7 +43,8 @@
             android:id="@+id/id_legal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="负责人身份证号" />
+            android:hint="负责人身份证号"
+            android:singleLine="true" />
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
@@ -68,7 +71,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="公司联系电话"
-            android:inputType="phone" />
+            android:inputType="phone"
+            android:singleLine="true" />
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
@@ -82,7 +86,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="负责人联系电话"
-            android:inputType="phone" />
+            android:inputType="phone"
+            android:singleLine="true" />
     </android.support.design.widget.TextInputLayout>
 
     <xziar.enhancer.widget.FloatLabelLayout
