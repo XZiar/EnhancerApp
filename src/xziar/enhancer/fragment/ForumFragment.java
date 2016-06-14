@@ -54,7 +54,7 @@ public class ForumFragment extends Fragment
 		}
 	}
 
-	private NetTask task = new NetTask("")
+	private NetTask<String> task = new NetTask<String>("")
 	{
 		@Override
 		protected void onTimeout()

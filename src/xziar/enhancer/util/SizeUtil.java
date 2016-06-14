@@ -14,12 +14,12 @@ public class SizeUtil
 					.getDisplayMetrics().density;
 			fscale = MainActivity.getAppContext().getResources()
 					.getDisplayMetrics().scaledDensity;
-			Log.v("SizeUtil", "SizeUtil initialize with scale=" + scale
+			Log.d("SizeUtil", "SizeUtil initialize with scale=" + scale
 					+ ",fscale=" + fscale);
 		}
 		catch (Exception e)
 		{
-			Log.v("tester", "SizeUtil initialize fail");
+			Log.d("tester", "SizeUtil initialize fail");
 			scale = fscale = 1.0f;
 		}
 
@@ -32,7 +32,7 @@ public class SizeUtil
 
 	public static float px2dp(int px)
 	{
-		return px / scale + 0.5f;
+		return px / scale;
 	}
 
 	public static int sp2px(float sp)

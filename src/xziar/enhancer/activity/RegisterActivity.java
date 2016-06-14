@@ -1,10 +1,14 @@
 package xziar.enhancer.activity;
 
+import java.util.HashMap;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -14,12 +18,19 @@ import android.widget.Toast;
 import xziar.enhancer.R;
 import xziar.enhancer.fragment.CpnRegFragment;
 import xziar.enhancer.fragment.StuRegFragment;
+import xziar.enhancer.util.NetworkUtil.NetTask;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.widget.WaitDialog;
 
-public class RegisterActivity extends AppCompatActivity implements OnClickListener
+public class RegisterActivity extends AppCompatActivity
+		implements OnClickListener
 {
+	private FragmentManager fragMan;
+	private Fragment currentFrag;
+	private StuRegFragment stuFrag;
+	private CpnRegFragment cpnFrag;
+	private WaitDialog waitDialog;
 	@BindView(R.id.username)
 	private EditText un;
 	@BindView(R.id.password)
@@ -30,23 +41,15 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 	private Button btn_stu;
 	@BindView(R.id.btn_cpn)
 	private Button btn_cpn;
-	private FragmentManager fragMan;
-	private Fragment currentFrag;
-	private StuRegFragment stuFrag;
-	private CpnRegFragment cpnFrag;
 
 	private void initWidget()
 	{
-		// un = (EditText) findViewById(R.id.username);
-		// pwd = (EditText) findViewById(R.id.password);
-		// btn_stu = (Button) findViewById(R.id.btn_stu);
-		// btn_cpn = (Button) findViewById(R.id.btn_cpn);
-		// btn_register = (Button) findViewById(R.id.btn_register);
 		ViewInject.inject(this);
 		btn_stu.setOnClickListener(this);
 		btn_cpn.setOnClickListener(this);
 		btn_register.setOnClickListener(this);
 
+		waitDialog = new WaitDialog(this, " ◊¢≤·÷–... ...");
 		fragMan = getFragmentManager();
 		stuFrag = new StuRegFragment(this);
 		cpnFrag = new CpnRegFragment(this);
@@ -69,17 +72,20 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 	{
 		if (v == btn_register)
 		{
-			final WaitDialog waitDialog = new WaitDialog(this,
-					un.getText().toString() + " & " + pwd.getText().toString()
-							+ " «Î…‘∫Û... ...");
-			waitDialog.show();
-			new Handler().postDelayed(new Runnable()
+			HashMap<String, String> data = null;
+			if (currentFrag == stuFrag)
 			{
-				public void run()
-				{
-					waitDialog.dismiss();
-				}
-			}, 3000);
+				data = stuFrag.getData();
+				data.put("stu.un", un.getText().toString());
+				data.put("stu.pwd", pwd.getText().toString());
+			}
+			else
+			{
+				data = cpnFrag.getData();
+				data.put("cpn.un", un.getText().toString());
+				data.put("cpn.pwd", pwd.getText().toString());
+			}
+			regTask.post(data);
 		}
 		else if (v == btn_stu)
 		{
@@ -106,4 +112,46 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 				.hide(currentFrag);
 		fragTrans.show(currentFrag = frag).commit();
 	}
+
+	private NetTask<JSONObject> regTask = new NetTask<JSONObject>("/register")
+	{
+		@Override
+		protected void onStart()
+		{
+			waitDialog.show();
+		}
+
+		@Override
+		protected JSONObject parse(String data)
+		{
+			return JSON.parseObject(data);
+		}
+
+		@Override
+		protected void onTimeout()
+		{
+			super.onTimeout();
+			waitDialog.dismiss();
+			Toast.makeText(RegisterActivity.this, "Timeout", Toast.LENGTH_SHORT)
+					.show();
+		}
+
+		@Override
+		protected void onFail(final Exception e)
+		{
+			super.onFail(e);
+			waitDialog.dismiss();
+			Toast.makeText(RegisterActivity.this, e.getClass().getName(),
+					Toast.LENGTH_SHORT).show();
+		}
+
+		@Override
+		protected void onSuccess(final JSONObject data)
+		{
+			waitDialog.dismiss();
+			Toast.makeText(RegisterActivity.this,
+					data.getString("success") + " : " + data.getString("msg"),
+					Toast.LENGTH_SHORT).show();
+		}
+	};
 }

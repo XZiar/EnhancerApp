@@ -81,60 +81,63 @@ public class NetworkUtil
 		client.newCall(request).enqueue(callback);
 	}
 
-	public static class NetCBHandler extends Handler
+	public static class NetCBHandler<D> extends Handler
 	{
-		private WeakReference<NetTask> ref;
+		private WeakReference<NetTask<D>> ref;
 
-		public NetCBHandler(NetTask cb)
+		public NetCBHandler(NetTask<D> callback)
 		{
 			super(Looper.getMainLooper());
-			ref = new WeakReference<NetTask>(cb);
+			ref = new WeakReference<>(callback);
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public void handleMessage(Message msg)
 		{
-			NetTask cb = ref.get();
-			if (cb == null)
+			NetTask<D> callback = ref.get();
+			if (callback == null)
 				return;
 			switch (NetTask.RetCode.values()[msg.what])
 			{
 			case Timeout:
-				cb.onTimeout();
+				callback.onTimeout();
 				break;
+			case Error:
 			case Fail:
-				cb.onFail((Exception) msg.obj);
+				callback.onFail((Exception) msg.obj);
 				break;
 			case Success:
-				cb.onSuccess((String) msg.obj);
+				callback.onSuccess((D) msg.obj);
 				break;
+			case Unsuccess:
+				callback.onUnsuccess(msg.arg1, (String) msg.obj);
 			}
 		}
 	}
 
-	public static class NetTask implements Callback
+	public static class NetTask<D> implements Callback
 	{
 		static enum RetCode
 		{
-			Timeout, Fail, Success,
+			Timeout, Error, Fail, Success, Unsuccess
 		}
 
-		protected NetCBHandler handler;
-		protected final String url;
+		protected NetCBHandler<D> handler;
+		protected String url;
 
 		public NetTask(String addr)
 		{
-			handler = new NetCBHandler(this);
+			handler = new NetCBHandler<D>(this);
 			url = baseUrl + addr;
 		}
 
-		public <T> void post(Map<String, T> form)
+		public void post(Map<String, String> form)
 		{
 			FormBody.Builder fbBuilder = new FormBody.Builder();
-			for (Map.Entry<String, T> e : form.entrySet())
+			for (Map.Entry<String, String> e : form.entrySet())
 			{
-				String val = (e.getValue() == null ? ""
-						: e.getValue().toString());
+				String val = (e.getValue() == null ? "" : e.getValue());
 				fbBuilder.add(e.getKey(), val);
 			}
 			RequestBody formBody = fbBuilder.build();
@@ -164,7 +167,7 @@ public class NetworkUtil
 			}
 			else
 			{
-				msg.what = RetCode.Fail.ordinal();
+				msg.what = RetCode.Error.ordinal();
 				msg.obj = e;
 			}
 			msg.sendToTarget();
@@ -176,8 +179,18 @@ public class NetworkUtil
 			Message msg = Message.obtain(handler);
 			try
 			{
-				msg.obj = response.body().string();
-				msg.what = RetCode.Success.ordinal();
+				String data = response.body().string();
+				if (response.isSuccessful())
+				{
+					msg.what = RetCode.Success.ordinal();
+					msg.obj = parse(data);
+				}
+				else
+				{
+					msg.what = RetCode.Unsuccess.ordinal();
+					msg.arg1 = response.code();
+					msg.obj = data;
+				}
 			}
 			catch (IOException e)
 			{
@@ -185,6 +198,12 @@ public class NetworkUtil
 				msg.what = RetCode.Fail.ordinal();
 			}
 			msg.sendToTarget();
+		};
+
+		@SuppressWarnings("unchecked")
+		protected D parse(String data)
+		{
+			return (D) data;
 		};
 
 		protected void onStart()
@@ -201,7 +220,11 @@ public class NetworkUtil
 			Log.e(LogTag, "HTTP fail", e);
 		};
 
-		protected void onSuccess(String data)
+		protected void onSuccess(D data)
+		{
+		};
+
+		protected void onUnsuccess(int code, String data)
 		{
 		};
 	}

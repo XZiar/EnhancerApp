@@ -52,9 +52,9 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 	{
 		if (v == btn_login)
 		{
-			HashMap<String, Object> data = new HashMap<>();
-			data.put("un", un.getText());
-			data.put("pwd", pwd.getText());
+			HashMap<String, String> data = new HashMap<>();
+			data.put("un", un.getText().toString());
+			data.put("pwd", pwd.getText().toString());
 			loginTask.post(data);
 		}
 		else if (v == txt_reg)
@@ -67,7 +67,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 					.show();
 	}
 
-	private NetTask loginTask = new NetTask("/login")
+	private NetTask<String> loginTask = new NetTask<String>("/login")
 	{
 		@Override
 		protected void onStart()
