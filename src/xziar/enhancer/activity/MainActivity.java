@@ -17,8 +17,7 @@ import xziar.enhancer.fragment.TaskListFragment;
 import xziar.enhancer.fragment.UserFragment;
 import xziar.enhancer.pojo.UserBean;
 
-public class MainActivity extends AppCompatActivity
-		implements OnMenuTabClickListener
+public class MainActivity extends AppCompatActivity implements OnMenuTabClickListener
 {
 	private FragmentManager fragMan;
 	private BottomBar bottombar;
@@ -34,22 +33,20 @@ public class MainActivity extends AppCompatActivity
 
 	private void initWidget()
 	{
+		tasklistFrag = new TaskListFragment();
+		forumFrag = new ForumFragment();
+		groupFrag = new GroupFragment();
+		userFrag = new UserFragment();
 		fragMan = getFragmentManager();
-		tasklistFrag = new TaskListFragment(this);
-		forumFrag = new ForumFragment(this);
-		groupFrag = new GroupFragment(this);
-		userFrag = new UserFragment(this);
-		FragmentTransaction fragTrans = fragMan.beginTransaction()
-				.add(R.id.main, tasklistFrag).add(R.id.main, forumFrag)
-				.add(R.id.main, groupFrag).add(R.id.main, userFrag);
-		fragTrans.hide(currentFrag = tasklistFrag).hide(forumFrag)
-				.hide(groupFrag).hide(userFrag).commit();
+		FragmentTransaction fragTrans = fragMan.beginTransaction().add(R.id.main, tasklistFrag)
+				.add(R.id.main, forumFrag).add(R.id.main, groupFrag).add(R.id.main, userFrag);
+		fragTrans.hide(currentFrag = tasklistFrag).hide(forumFrag).hide(groupFrag).hide(userFrag)
+				.commit();
 
 		bottombar.setMaxFixedTabs(3);
 		bottombar.setItems(R.menu.bottombar);
 		bottombar.setOnMenuTabClickListener(this);
-		bottombar.mapColorForTab(0,
-				ContextCompat.getColor(this, R.color.colorAccent));
+		bottombar.mapColorForTab(0, ContextCompat.getColor(this, R.color.colorAccent));
 		bottombar.mapColorForTab(1, 0xFF5D4037);
 		bottombar.mapColorForTab(2, "#7B1FA2");
 		bottombar.mapColorForTab(3, "#E43F3F");
@@ -75,8 +72,7 @@ public class MainActivity extends AppCompatActivity
 
 	private void changeFrag(Fragment frag)
 	{
-		FragmentTransaction fragTrans = fragMan.beginTransaction()
-				.hide(currentFrag);
+		FragmentTransaction fragTrans = fragMan.beginTransaction().hide(currentFrag);
 		fragTrans.show(currentFrag = frag).commit();
 	}
 
@@ -105,7 +101,6 @@ public class MainActivity extends AppCompatActivity
 	public void onMenuTabReSelected(int menuItemId)
 	{
 		// TODO Auto-generated method stub
-
 	}
 
 	public static Context getAppContext()

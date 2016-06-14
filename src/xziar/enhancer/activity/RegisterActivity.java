@@ -23,8 +23,7 @@ import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.widget.WaitDialog;
 
-public class RegisterActivity extends AppCompatActivity
-		implements OnClickListener
+public class RegisterActivity extends AppCompatActivity implements OnClickListener
 {
 	private FragmentManager fragMan;
 	private Fragment currentFrag;
@@ -50,9 +49,9 @@ public class RegisterActivity extends AppCompatActivity
 		btn_register.setOnClickListener(this);
 
 		waitDialog = new WaitDialog(this, " ×¢²áÖÐ... ...");
+		stuFrag = new StuRegFragment();
+		cpnFrag = new CpnRegFragment();
 		fragMan = getFragmentManager();
-		stuFrag = new StuRegFragment(this);
-		cpnFrag = new CpnRegFragment(this);
 		fragMan.beginTransaction().add(R.id.regcontent, currentFrag = stuFrag)
 				.add(R.id.regcontent, cpnFrag).hide(cpnFrag).commit();
 		btn_stu.setBackgroundResource(R.color.colorAccent);
@@ -72,20 +71,20 @@ public class RegisterActivity extends AppCompatActivity
 	{
 		if (v == btn_register)
 		{
-			HashMap<String, String> data = null;
 			if (currentFrag == stuFrag)
 			{
-				data = stuFrag.getData();
+				HashMap<String, String> data = stuFrag.getData();
 				data.put("stu.un", un.getText().toString());
 				data.put("stu.pwd", pwd.getText().toString());
+				regTask.post(data);
 			}
 			else
 			{
-				data = cpnFrag.getData();
+				HashMap<String, Object> data = cpnFrag.getData();
 				data.put("cpn.un", un.getText().toString());
 				data.put("cpn.pwd", pwd.getText().toString());
+				regTask.postX(data);
 			}
-			regTask.post(data);
 		}
 		else if (v == btn_stu)
 		{
@@ -100,16 +99,14 @@ public class RegisterActivity extends AppCompatActivity
 			changeFrag(cpnFrag);
 		}
 		else
-			Toast.makeText(this, v.getClass().getName(), Toast.LENGTH_SHORT)
-					.show();
+			Toast.makeText(this, v.getClass().getName(), Toast.LENGTH_SHORT).show();
 	}
 
 	private void changeFrag(Fragment frag)
 	{
 		if (currentFrag == frag)
 			return;
-		FragmentTransaction fragTrans = fragMan.beginTransaction()
-				.hide(currentFrag);
+		FragmentTransaction fragTrans = fragMan.beginTransaction().hide(currentFrag);
 		fragTrans.show(currentFrag = frag).commit();
 	}
 
@@ -132,8 +129,7 @@ public class RegisterActivity extends AppCompatActivity
 		{
 			super.onTimeout();
 			waitDialog.dismiss();
-			Toast.makeText(RegisterActivity.this, "Timeout", Toast.LENGTH_SHORT)
-					.show();
+			Toast.makeText(RegisterActivity.this, "Timeout", Toast.LENGTH_SHORT).show();
 		}
 
 		@Override
@@ -141,8 +137,8 @@ public class RegisterActivity extends AppCompatActivity
 		{
 			super.onFail(e);
 			waitDialog.dismiss();
-			Toast.makeText(RegisterActivity.this, e.getClass().getName(),
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(RegisterActivity.this, e.getClass().getName(), Toast.LENGTH_SHORT)
+					.show();
 		}
 
 		@Override
@@ -150,8 +146,17 @@ public class RegisterActivity extends AppCompatActivity
 		{
 			waitDialog.dismiss();
 			Toast.makeText(RegisterActivity.this,
-					data.getString("success") + " : " + data.getString("msg"),
+					data.getString("success") + " : " + data.getString("msg"), Toast.LENGTH_SHORT)
+					.show();
+		}
+
+		@Override
+		protected void onUnsuccess(int code, String data)
+		{
+			waitDialog.dismiss();
+			Toast.makeText(RegisterActivity.this, "unsuccess(" + code + "): " + data,
 					Toast.LENGTH_SHORT).show();
 		}
+
 	};
 }

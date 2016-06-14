@@ -1,6 +1,5 @@
 package xziar.enhancer.fragment;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -17,15 +16,9 @@ import xziar.enhancer.util.ViewInject.ObjView;
 @ObjView("view")
 public class ForumFragment extends Fragment
 {
-	private Activity act;
 	private View view;
 	@BindView(R.id.txt)
 	private TextView txt;
-
-	public ForumFragment(Activity act)
-	{
-		this.act = act;
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -68,9 +61,8 @@ public class ForumFragment extends Fragment
 		protected void onFail(final Exception e)
 		{
 			super.onFail(e);
-			txt.setText(txt.getText().toString() + "\n" + this.toString()
-					+ " : fail by " + e.getClass().getName()
-					+ "\nWith Handler: " + handler.toString());
+			txt.setText(txt.getText().toString() + "\n" + this.toString() + " : fail by "
+					+ e.getClass().getName() + "\nWith Handler: " + handler.toString());
 		}
 
 		@Override

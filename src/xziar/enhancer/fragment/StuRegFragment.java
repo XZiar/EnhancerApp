@@ -3,7 +3,6 @@ package xziar.enhancer.fragment;
 import java.util.Calendar;
 import java.util.HashMap;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,8 +12,6 @@ import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.RadioGroup;
 import xziar.enhancer.R;
-import xziar.enhancer.pojo.StudentBean;
-import xziar.enhancer.pojo.UserBean;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.util.ViewInject.ObjView;
@@ -22,7 +19,6 @@ import xziar.enhancer.util.ViewInject.ObjView;
 @ObjView("view")
 public class StuRegFragment extends Fragment
 {
-	private Activity act;
 	private View view;
 	@BindView(R.id.time_year)
 	private NumberPicker time_year;
@@ -38,11 +34,6 @@ public class StuRegFragment extends Fragment
 	private EditText sid;
 	@BindView(R.id.school)
 	private EditText school;
-
-	public StuRegFragment(Activity act)
-	{
-		this.act = act;
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -71,10 +62,9 @@ public class StuRegFragment extends Fragment
 		data.put("stu.name", name.getText().toString());
 		data.put("stu.id_person", pid.getText().toString());
 		data.put("stu.id_student", sid.getText().toString());
-		data.put("stu.stime_enter", String.format("%04d-%02d",
-				time_year.getValue(), time_month.getValue()));
-		data.put("stu.sgender",
-				String.valueOf(sgender.getCheckedRadioButtonId() == R.id.male));
+		data.put("stu.stime_enter",
+				String.format("%04d-%02d", time_year.getValue(), time_month.getValue()));
+		data.put("stu.sgender", String.valueOf(sgender.getCheckedRadioButtonId() == R.id.male));
 		data.put("stu.school", school.getText().toString());
 		return data;
 	}

@@ -20,6 +20,8 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -60,8 +62,7 @@ public class NetworkUtil
 		if (JOproxy != null)
 		{
 			proxy = new Proxy(Proxy.Type.valueOf(JOproxy.getString("type")),
-					new InetSocketAddress(JOproxy.getString("host"),
-							JOproxy.getIntValue("port")));
+					new InetSocketAddress(JOproxy.getString("host"), JOproxy.getIntValue("port")));
 			Log.d(LogTag, "proxy : " + proxy.toString());
 			client = new OkHttpClient.Builder().proxy(proxy).build();
 		}
@@ -74,10 +75,9 @@ public class NetworkUtil
 
 	public static void Test(Callback callback)
 	{
-		RequestBody formBody = new FormBody.Builder().add("un", "student")
-				.add("pwd", "student").build();
-		Request request = new Request.Builder().url(baseUrl + "/login")
-				.post(formBody).build();
+		RequestBody formBody = new FormBody.Builder().add("un", "student").add("pwd", "student")
+				.build();
+		Request request = new Request.Builder().url(baseUrl + "/login").post(formBody).build();
 		client.newCall(request).enqueue(callback);
 	}
 
@@ -132,7 +132,7 @@ public class NetworkUtil
 			url = baseUrl + addr;
 		}
 
-		public void post(Map<String, String> form)
+		public final void post(Map<String, String> form)
 		{
 			FormBody.Builder fbBuilder = new FormBody.Builder();
 			for (Map.Entry<String, String> e : form.entrySet())
@@ -141,8 +141,29 @@ public class NetworkUtil
 				fbBuilder.add(e.getKey(), val);
 			}
 			RequestBody formBody = fbBuilder.build();
-			Request request = new Request.Builder().url(url).post(formBody)
-					.build();
+			Request request = new Request.Builder().url(url).post(formBody).build();
+			run(request);
+		}
+
+		public final void postX(Map<String, Object> form)
+		{
+			MultipartBody.Builder fbBuilder = new MultipartBody.Builder();
+			fbBuilder.setType(MultipartBody.FORM);
+			for (Map.Entry<String, Object> e : form.entrySet())
+			{
+				Object val = e.getValue();
+				if (val == null)
+					fbBuilder.addFormDataPart(e.getKey(), "");
+				else if (val.getClass() == String.class)
+					fbBuilder.addFormDataPart(e.getKey(), (String) val);
+				else if (val.getClass() == byte[].class)
+				{
+					fbBuilder.addFormDataPart(e.getKey(), "tmp.png",
+							RequestBody.create(MediaType.parse("image/png"), (byte[]) val));
+				}
+			}
+			RequestBody formBody = fbBuilder.build();
+			Request request = new Request.Builder().url(url).post(formBody).build();
 			run(request);
 		}
 

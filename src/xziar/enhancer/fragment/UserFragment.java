@@ -1,6 +1,5 @@
 package xziar.enhancer.fragment;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,7 +23,6 @@ import xziar.enhancer.widget.NumberBox;
 public class UserFragment extends Fragment implements OnClickListener
 {
 	private static final int REQUESTCODE_LOGIN = 1;
-	private Activity act;
 	private View view;
 	private UserBean user;
 	@BindView(R.id.headimg)
@@ -37,11 +35,6 @@ public class UserFragment extends Fragment implements OnClickListener
 	private NumberBox task_finish;
 	@BindView(R.id.task_ongoing)
 	private NumberBox task_ongoing;
-
-	public UserFragment(Activity act)
-	{
-		this.act = act;
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -101,7 +94,7 @@ public class UserFragment extends Fragment implements OnClickListener
 		{
 			if (user == null)
 			{
-				Intent it = new Intent(act, LoginActivity.class);
+				Intent it = new Intent(getActivity(), LoginActivity.class);
 				startActivityForResult(it, REQUESTCODE_LOGIN);
 			}
 			else
