@@ -1,6 +1,7 @@
 package xziar.enhancer.util;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -21,6 +22,7 @@ public class ViewInject
 		public int value();
 	}
 
+	@Inherited
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	public static @interface ObjView
@@ -28,6 +30,7 @@ public class ViewInject
 		public String value();
 	}
 
+	private static long elapse = 0;
 	private static final String LogTag = "ViewInject";
 	private static HashMap<Class<?>, Field> HolderMap = new HashMap<>();
 	private static HashMap<Class<?>, Method> MethodMap = new HashMap<>();
@@ -35,27 +38,44 @@ public class ViewInject
 
 	private static Method loadMeth(Class<?> clz) throws NoSuchMethodException
 	{
+		Method meth = MethodMap.get(clz);
+		if (meth != null)
+			return meth;
+		// load method
 		Log.d(LogTag, "load method: " + clz.getName());
-		Method meth = clz.getMethod("findViewById", int.class);
+		meth = clz.getMethod("findViewById", int.class);
 		MethodMap.put(clz, meth);
 		return meth;
 	}
 
 	private static HashMap<Field, Integer> loadField(Class<?> clz)
-			throws NoSuchFieldException, NoSuchMethodException
+			throws NoSuchMethodException, NoSuchFieldException
 	{
+		HashMap<Field, Integer> ret = InjectMap.get(clz);
+		if (ret != null)
+			return ret;
+		// load field
 		Log.d(LogTag, "load field: " + clz.getName());
-		HashMap<Field, Integer> ret = new HashMap<>();
-		Field[] fields = clz.getDeclaredFields();
+		ret = new HashMap<>();
 		ObjView iv = clz.getAnnotation(ObjView.class);
 		if (iv != null)
 		{
-			Log.d(LogTag, "load field: viewHolder object: " + iv.value());
-			Field f = clz.getDeclaredField(iv.value());
-			f.setAccessible(true);
+			Log.d(LogTag, "load holder: " + iv.value());
+			Field f = null;
+			try
+			{
+				f = clz.getDeclaredField(iv.value());
+				f.setAccessible(true);
+			}
+			catch (NoSuchFieldException e)
+			{
+				Log.w(LogTag, "ObjView not in this class");
+				f = clz.getField(iv.value());
+			}
 			HolderMap.put(clz, f);
 		}
 
+		Field[] fields = clz.getDeclaredFields();
 		for (Field f : fields)
 		{
 			BindView b = f.getAnnotation(BindView.class);
@@ -71,51 +91,51 @@ public class ViewInject
 
 	public static void inject(Object obj)
 	{
+		long ctime = System.nanoTime();
 		Log.d(LogTag, "inject: " + obj.toString());
 		Class<?> clz = obj.getClass();
-		HashMap<Field, Integer> injects = InjectMap.get(clz);
-		if (injects == null)
-			try
-			{
-				injects = loadField(clz);
-			}
-			catch (NoSuchFieldException | NoSuchMethodException e)
-			{
-				Log.e(LogTag, "error when loadfield", e);
-			}
-		Field f = HolderMap.get(clz);
-		Object viewHolder = null;
 		try
 		{
-			viewHolder = (f == null ? obj : f.get(obj));
-		}
-		catch (IllegalAccessException | IllegalArgumentException e)
-		{
-			Log.e(LogTag, "error when get viewHolder", e);
-		}
-		Class<?> holderClz = viewHolder.getClass();
-		Method meth = MethodMap.get(holderClz);
-		if (meth == null)
+			HashMap<Field, Integer> injects = loadField(clz);
+			Field f = HolderMap.get(clz);
 			try
 			{
-				meth = loadMeth(holderClz);
+				Object viewHolder = (f == null ? obj : f.get(obj));
+				Class<?> holderClz = viewHolder.getClass();
+				Method meth = loadMeth(holderClz);
+				try
+				{
+					for (Map.Entry<Field, Integer> inj : injects.entrySet())
+					{
+						Object view = meth.invoke(viewHolder, inj.getValue());
+						inj.getKey().set(obj, view);
+						// Log.v(LogTag, inj.getKey().getName() + " <== " +
+						// inj.getValue());
+					}
+				}
+				catch (IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException e)
+				{
+					Log.e(LogTag, "error when do inject", e);
+				}
+			}
+			catch (IllegalAccessException | IllegalArgumentException e)
+			{
+				Log.e(LogTag, "error when get viewHolder", e);
 			}
 			catch (NoSuchMethodException e1)
 			{
 				Log.e(LogTag, "error when loadmeth", e1);
 			}
-		try
-		{
-			for (Map.Entry<Field, Integer> inj : injects.entrySet())
-			{
-				Object view = meth.invoke(viewHolder, inj.getValue());
-				inj.getKey().set(obj, view);
-			}
 		}
-		catch (IllegalAccessException | IllegalArgumentException
-				| InvocationTargetException e)
+		catch (NoSuchFieldException | NoSuchMethodException e)
 		{
-			Log.e(LogTag, "error when get inject", e);
+			Log.e(LogTag, "error when loadfield", e);
 		}
+
+		ctime = System.nanoTime() - ctime;
+		elapse += ctime;
+		Log.i(LogTag, "excute time " + ctime / 1000000 + "ms, total "
+				+ elapse / 1000000 + "ms");
 	}
 }

@@ -1,4 +1,4 @@
-package xziar.enhancer.util;
+package xziar.enhancer.adapter;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -13,8 +13,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import android.view.ViewGroup;
-import xziar.enhancer.util.CommonHolder.OnItemClickListener;
 
 public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends
 		RecyclerView.Adapter<TH> implements Comparator<TD>, OnClickListener

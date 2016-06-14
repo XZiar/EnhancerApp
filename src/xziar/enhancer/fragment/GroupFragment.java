@@ -11,10 +11,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import xziar.enhancer.R;
+import xziar.enhancer.adapter.GroupAdapter;
+import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.pojo.AccountBean;
 import xziar.enhancer.pojo.GroupBean;
-import xziar.enhancer.util.CommonHolder.OnItemClickListener;
-import xziar.enhancer.util.GroupAdapter;
 
 public class GroupFragment extends Fragment
 		implements OnItemClickListener<GroupBean>

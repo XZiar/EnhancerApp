@@ -1,8 +1,10 @@
-package xziar.enhancer.util;
+package xziar.enhancer.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import xziar.enhancer.util.ViewInject.ObjView;
 
+@ObjView("itemView")
 public abstract class CommonHolder<T> extends RecyclerView.ViewHolder
 {
 	public static interface OnItemClickListener<E>

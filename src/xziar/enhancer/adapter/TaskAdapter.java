@@ -1,19 +1,29 @@
-package xziar.enhancer.util;
+package xziar.enhancer.adapter;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 import xziar.enhancer.R;
 import xziar.enhancer.pojo.TaskBean;
+import xziar.enhancer.util.ViewInject;
+import xziar.enhancer.util.ViewInject.BindView;
 
 public class TaskAdapter extends CommonAdapter<TaskBean, TaskAdapter.TaskHolder>
 {
 	static class TaskHolder extends CommonHolder<TaskBean>
 	{
-		private TextView title, time, launcher, applycount;
+		@BindView(R.id.title)
+		private TextView title;
+		@BindView(R.id.time)
+		private TextView time;
+		@BindView(R.id.launcher)
+		private TextView launcher;
+		@BindView(R.id.applycount)
+		private TextView applycount;
 		private Date sDate;
 		@SuppressLint("SimpleDateFormat")
 		private static SimpleDateFormat sdf = new SimpleDateFormat(
@@ -22,10 +32,7 @@ public class TaskAdapter extends CommonAdapter<TaskBean, TaskAdapter.TaskHolder>
 		public TaskHolder(View itemView)
 		{
 			super(itemView);
-			title = (TextView) itemView.findViewById(R.id.title);
-			launcher = (TextView) itemView.findViewById(R.id.launcher);
-			time = (TextView) itemView.findViewById(R.id.time);
-			applycount = (TextView) itemView.findViewById(R.id.applycount);
+			ViewInject.inject(this);
 			sDate = new Date();
 		}
 

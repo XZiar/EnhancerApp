@@ -13,9 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import xziar.enhancer.R;
+import xziar.enhancer.adapter.TaskAdapter;
+import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.pojo.TaskBean;
-import xziar.enhancer.util.CommonHolder.OnItemClickListener;
-import xziar.enhancer.util.TaskAdapter;
 
 public class TaskListFragment extends Fragment
 		implements OnItemClickListener<TaskBean>

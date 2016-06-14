@@ -2,6 +2,7 @@ package xziar.enhancer.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -17,6 +18,8 @@ public class FloatLabelLayout extends LinearLayout
 {
 	TextView label;
 	Context context;
+	static final int pad = SizeUtil.dp2px(4), dheight = SizeUtil.dp2px(1);
+	static ColorDrawable dividerImg = new ColorDrawable(0xff777777);
 
 	public FloatLabelLayout(Context context, AttributeSet attrs,
 			int defStyleAttr)
@@ -36,13 +39,13 @@ public class FloatLabelLayout extends LinearLayout
 			hint = "Label";
 		label.setText(hint);
 		ta.recycle();
-		final int pad = SizeUtil.dp2px(4);
 		setPadding(pad, 0, pad, pad);
 		ImageView divider = new ImageView(context);
-		divider.setImageResource(R.drawable.divider_horizontal);
+		divider.setImageDrawable(dividerImg);
 		divider.setPadding(0, pad, 0, 0);
+		divider.setScaleType(ImageView.ScaleType.FIT_XY);
 		super.addView(divider, -1,
-				new LayoutParams(LayoutParams.MATCH_PARENT, pad + 1));
+				new LayoutParams(LayoutParams.MATCH_PARENT, pad + dheight));
 	}
 
 	public FloatLabelLayout(Context context, AttributeSet attrs)
