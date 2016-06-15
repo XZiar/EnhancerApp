@@ -5,12 +5,11 @@
     android:orientation="vertical" >
 
     <LinearLayout
+        android:id="@+id/loginarea"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingLeft="12dp"
-        android:paddingRight="12dp"
-        android:paddingTop="48dp" >
+        android:padding="12dp" >
 
         <ImageView
             android:id="@+id/headimg"
@@ -18,6 +17,7 @@
             android:layout_height="80dp"
             android:layout_gravity="center"
             android:layout_marginBottom="8dp"
+            android:layout_marginTop="24dp"
             android:scaleType="fitXY"
             android:src="@drawable/defaulthead" />
 
@@ -26,9 +26,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="8dp"
+            android:layout_margin="4dp"
             android:text="未登录"
-            android:textSize="18sp" />
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/des"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:maxLines="2"
+            android:paddingEnd="8dp"
+            android:paddingStart="8dp"
+            android:text="这个人很懒，什么都没有留下，因为不开放此功能"
+            android:textSize="14sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -69,6 +80,24 @@
                 android:textSize="22sp" >
             </xziar.enhancer.widget.NumberBox>
         </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/oparea"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="@drawable/divider_vertical"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:showDividers="middle" >
+
+        <TextView
+            android:id="@+id/chgpwd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="32dp"
+            android:text="修改密码"
+            android:textSize="20sp" />
     </LinearLayout>
 
 </LinearLayout>

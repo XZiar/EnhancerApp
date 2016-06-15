@@ -71,7 +71,6 @@ public class TaskListFragment extends Fragment implements OnItemClickListener<Ta
 	public void onActivityCreated(Bundle savedInstanceState)
 	{
 		super.onActivityCreated(savedInstanceState);
-
 	}
 
 	@Override
