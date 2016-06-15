@@ -133,7 +133,7 @@ public class UserFragment extends Fragment implements OnClickListener
 		}
 		if (v == headimg)
 		{
-			AlertDialog dlg = new AlertDialog.Builder(getActivity()).setTitle("Í·Ïñ").setView(headimg)
+			AlertDialog dlg = new AlertDialog.Builder(getActivity()).setTitle("Í·Ïñ")
 					.setPositiveButton("OK", null).setNegativeButton("CANCEL", null).create();
 			dlg.show();
 		}
