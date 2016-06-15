@@ -1,5 +1,6 @@
 package xziar.enhancer.activity;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 import com.alibaba.fastjson.JSON;
@@ -15,6 +16,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import okhttp3.ResponseBody;
 import xziar.enhancer.R;
 import xziar.enhancer.fragment.CpnRegFragment;
 import xziar.enhancer.fragment.StuRegFragment;
@@ -83,7 +85,7 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 				HashMap<String, Object> data = cpnFrag.getData();
 				data.put("cpn.un", un.getText().toString());
 				data.put("cpn.pwd", pwd.getText().toString());
-				regTask.postX(data);
+				regTask.post(data, true);
 			}
 		}
 		else if (v == btn_stu)
@@ -119,44 +121,32 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 		}
 
 		@Override
-		protected JSONObject parse(String data)
+		protected void onDone()
 		{
-			return JSON.parseObject(data);
+			waitDialog.dismiss();
 		}
 
 		@Override
-		protected void onTimeout()
+		protected JSONObject parse(ResponseBody data) throws IOException
 		{
-			super.onTimeout();
-			waitDialog.dismiss();
-			Toast.makeText(RegisterActivity.this, "Timeout", Toast.LENGTH_SHORT).show();
+			return JSON.parseObject(data.string());
 		}
 
 		@Override
-		protected void onFail(final Exception e)
+		protected void onFail()
 		{
-			super.onFail(e);
-			waitDialog.dismiss();
-			Toast.makeText(RegisterActivity.this, e.getClass().getName(), Toast.LENGTH_SHORT)
-					.show();
+			Toast.makeText(RegisterActivity.this, "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
 		}
 
 		@Override
 		protected void onSuccess(final JSONObject data)
 		{
-			waitDialog.dismiss();
-			Toast.makeText(RegisterActivity.this,
-					data.getString("success") + " : " + data.getString("msg"), Toast.LENGTH_SHORT)
-					.show();
+			Toast.makeText(RegisterActivity.this, data.getString("msg"), Toast.LENGTH_SHORT).show();
+			if (data.getBooleanValue("success"))
+			{
+				setResult(RESULT_OK, null);
+				finish();
+			}
 		}
-
-		@Override
-		protected void onUnsuccess(int code, String data)
-		{
-			waitDialog.dismiss();
-			Toast.makeText(RegisterActivity.this, "unsuccess(" + code + "): " + data,
-					Toast.LENGTH_SHORT).show();
-		}
-
 	};
 }

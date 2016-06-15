@@ -26,6 +26,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import xziar.enhancer.R;
 import xziar.enhancer.activity.MainActivity;
 
@@ -98,6 +99,7 @@ public class NetworkUtil
 			NetTask<D> callback = ref.get();
 			if (callback == null)
 				return;
+			callback.onDone();
 			switch (NetTask.RetCode.values()[msg.what])
 			{
 			case Timeout:
@@ -105,7 +107,7 @@ public class NetworkUtil
 				break;
 			case Error:
 			case Fail:
-				callback.onFail((Exception) msg.obj);
+				callback.onError((Exception) msg.obj);
 				break;
 			case Success:
 				callback.onSuccess((D) msg.obj);
@@ -132,24 +134,21 @@ public class NetworkUtil
 			url = baseUrl + addr;
 		}
 
-		public final void post(Map<String, String> form)
+		/**
+		 * post action
+		 * 
+		 * @param form
+		 *            a Map<String, ?> that contains form data
+		 * @param isMultiPart
+		 *            determine whether use multipart/form
+		 */
+		public final void post(Map<String, ? extends Object> form, boolean isMultiPart)
 		{
-			FormBody.Builder fbBuilder = new FormBody.Builder();
-			for (Map.Entry<String, String> e : form.entrySet())
-			{
-				String val = (e.getValue() == null ? "" : e.getValue());
-				fbBuilder.add(e.getKey(), val);
-			}
-			RequestBody formBody = fbBuilder.build();
-			Request request = new Request.Builder().url(url).post(formBody).build();
-			run(request);
-		}
-
-		public final void postX(Map<String, Object> form)
-		{
+			if (!isMultiPart)
+				post(form);
 			MultipartBody.Builder fbBuilder = new MultipartBody.Builder();
 			fbBuilder.setType(MultipartBody.FORM);
-			for (Map.Entry<String, Object> e : form.entrySet())
+			for (Map.Entry<String, ? extends Object> e : form.entrySet())
 			{
 				Object val = e.getValue();
 				if (val == null)
@@ -161,6 +160,26 @@ public class NetworkUtil
 					fbBuilder.addFormDataPart(e.getKey(), "tmp.png",
 							RequestBody.create(MediaType.parse("image/png"), (byte[]) val));
 				}
+			}
+			RequestBody formBody = fbBuilder.build();
+			Request request = new Request.Builder().url(url).post(formBody).build();
+			run(request);
+		};
+
+		/**
+		 * post action
+		 * 
+		 * @param form
+		 *            a Map<String, ?> that contains form data.
+		 *            Reponse form will be create using ?'s toString
+		 */
+		public final void post(Map<String, ? extends Object> form)
+		{
+			FormBody.Builder fbBuilder = new FormBody.Builder();
+			for (Map.Entry<String, ? extends Object> e : form.entrySet())
+			{
+				String val = (e.getValue() == null ? "" : e.getValue().toString());
+				fbBuilder.add(e.getKey(), val);
 			}
 			RequestBody formBody = fbBuilder.build();
 			Request request = new Request.Builder().url(url).post(formBody).build();
@@ -200,7 +219,7 @@ public class NetworkUtil
 			Message msg = Message.obtain(handler);
 			try
 			{
-				String data = response.body().string();
+				ResponseBody data = response.body();
 				if (response.isSuccessful())
 				{
 					msg.what = RetCode.Success.ordinal();
@@ -210,7 +229,7 @@ public class NetworkUtil
 				{
 					msg.what = RetCode.Unsuccess.ordinal();
 					msg.arg1 = response.code();
-					msg.obj = data;
+					msg.obj = data.string();
 				}
 			}
 			catch (IOException e)
@@ -221,31 +240,86 @@ public class NetworkUtil
 			msg.sendToTarget();
 		};
 
+		/**
+		 * parser that translates respnse to demanding data
+		 * 
+		 * @param data
+		 *            response body
+		 * @return
+		 * 		specific data demanded
+		 * @throws IOException
+		 *             exception that may be thrown when reading response body's
+		 *             data
+		 */
 		@SuppressWarnings("unchecked")
-		protected D parse(String data)
+		protected D parse(ResponseBody data) throws IOException
 		{
-			return (D) data;
+			return (D) data.string();
 		};
 
+		/**
+		 * work to be done after launch the network connection
+		 * runs on MainThread
+		 */
 		protected void onStart()
 		{
 		};
 
+		/**
+		 * work to be done before invoke callback
+		 * runs on MainThread
+		 */
+		protected void onDone()
+		{
+		};
+
+		/**
+		 * callback when connection timeout
+		 */
 		protected void onTimeout()
 		{
-			Log.e(LogTag, "HTTP timeout");
+			Log.w(LogTag, "HTTP timeout");
+			onFail();
 		};
 
-		protected void onFail(Exception e)
+		/**
+		 * callback when connection throws exception
+		 * 
+		 * @param e
+		 *            exception throwed by connection
+		 */
+		protected void onError(Exception e)
 		{
-			Log.e(LogTag, "HTTP fail", e);
+			Log.w(LogTag, "HTTP fail", e);
+			onFail();
 		};
 
+		/**
+		 * callback when connection return unsuccess state code
+		 * 
+		 * @param code
+		 *            response code
+		 * @param data
+		 *            response body
+		 */
+		protected void onUnsuccess(int code, String data)
+		{
+			Log.w(LogTag, "HTTP unsuccess: " + code);
+			onFail();
+		};
+
+		/**
+		 * callback when successfully get data
+		 */
 		protected void onSuccess(D data)
 		{
 		};
 
-		protected void onUnsuccess(int code, String data)
+		/**
+		 * callback when task is unsuccessfullly done
+		 * (designed to run before other specific callback)
+		 */
+		protected void onFail()
 		{
 		};
 	}

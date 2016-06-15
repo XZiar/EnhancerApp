@@ -36,7 +36,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 		ViewInject.inject(this);
 		btn_login.setOnClickListener(this);
 		txt_reg.setOnClickListener(this);
-		waitDialog = new WaitDialog(this, " ÇëÉÔºó... ...");
+		waitDialog = new WaitDialog(this, " µÇÂ½ÖÐ... ...");
 	}
 
 	@Override
@@ -63,8 +63,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 			startActivityForResult(it, REQUESTCODE_REGISTER);
 		}
 		else
-			Toast.makeText(this, v.getClass().getName(), Toast.LENGTH_SHORT)
-					.show();
+			Toast.makeText(this, v.getClass().getName(), Toast.LENGTH_SHORT).show();
 	}
 
 	private NetTask<String> loginTask = new NetTask<String>("/login")
@@ -76,28 +75,20 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 		}
 
 		@Override
-		protected void onTimeout()
+		protected void onDone()
 		{
-			super.onTimeout();
 			waitDialog.dismiss();
-			Toast.makeText(LoginActivity.this, "Timeout", Toast.LENGTH_SHORT)
-					.show();
 		}
 
 		@Override
-		protected void onFail(final Exception e)
+		protected void onFail()
 		{
-			super.onFail(e);
-			waitDialog.dismiss();
-			Toast.makeText(LoginActivity.this, e.getClass().getName(),
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(LoginActivity.this, "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
 		}
 
 		@Override
 		protected void onSuccess(final String data)
 		{
-			super.onSuccess(data);
-			waitDialog.dismiss();
 			Toast.makeText(LoginActivity.this, data, Toast.LENGTH_SHORT).show();
 		}
 	};
