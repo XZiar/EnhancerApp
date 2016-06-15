@@ -54,6 +54,19 @@ public class UserFragment extends Fragment implements OnClickListener
 	}
 
 	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		if (data != null)
+		{
+			if (data.getBooleanExtra("changed", false))
+			{
+				refreshData();
+			}
+		}
+		super.onActivityResult(requestCode, resultCode, data);
+	}
+
+	@Override
 	public void onHiddenChanged(boolean hidden)
 	{
 		super.onHiddenChanged(hidden);
@@ -71,8 +84,7 @@ public class UserFragment extends Fragment implements OnClickListener
 	{
 		if (user == null)
 		{
-			headimg.setImageDrawable(
-					CircleImageUtil.getCircleDrawable(R.drawable.defaulthead));
+			headimg.setImageDrawable(CircleImageUtil.getCircleDrawable(R.drawable.defaulthead));
 			name.setText("Î´µÇÂ¼");
 			score.setVal("*");
 			task_finish.setVal("*");

@@ -120,6 +120,24 @@ public class NetworkUtil
 
 	public static class NetTask<D> implements Callback
 	{
+		public static class ParseResultFailException extends Exception
+		{
+			private static final long serialVersionUID = 5389772685857717961L;
+			private final String msg;
+
+			public ParseResultFailException(String msg)
+			{
+				super();
+				this.msg = msg;
+			}
+
+			public String getMsg()
+			{
+				return msg;
+			}
+
+		}
+
 		static enum RetCode
 		{
 			Timeout, Error, Fail, Success, Unsuccess
@@ -237,6 +255,12 @@ public class NetworkUtil
 				msg.obj = e;
 				msg.what = RetCode.Fail.ordinal();
 			}
+			catch (ParseResultFailException e)
+			{
+				msg.what = RetCode.Unsuccess.ordinal();
+				msg.arg1 = response.code();
+				msg.obj = e.getMsg();
+			}
 			msg.sendToTarget();
 		};
 
@@ -250,9 +274,12 @@ public class NetworkUtil
 		 * @throws IOException
 		 *             exception that may be thrown when reading response body's
 		 *             data
+		 * @throws ParseResultFailException
+		 *             exception that may be thrown if data parsed from response
+		 *             body does not meets demand
 		 */
 		@SuppressWarnings("unchecked")
-		protected D parse(ResponseBody data) throws IOException
+		protected D parse(ResponseBody data) throws IOException, ParseResultFailException
 		{
 			return (D) data.string();
 		};
