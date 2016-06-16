@@ -53,7 +53,6 @@ public class ForumFragment extends Fragment implements OnItemClickListener<PostB
 
 	private void refreshData()
 	{
-		ds.clear();
 		HashMap<String, Integer> dat = new HashMap<>();
 		dat.put("from", 0);
 		listTask.post(dat);
@@ -69,8 +68,16 @@ public class ForumFragment extends Fragment implements OnItemClickListener<PostB
 	public void onHiddenChanged(boolean hidden)
 	{
 		super.onHiddenChanged(hidden);
-		if(!hidden)
+		if (!hidden)
 			refreshData();
+	}
+
+	@Override
+	public void OnClick(PostBean data)
+	{
+		HashMap<String, Integer> dat = new HashMap<>();
+		dat.put("pid", data.getPid());
+		viewTask.post(dat);
 	}
 
 	private NetTask<List<PostBean>> listTask = new NetTask<List<PostBean>>("/app/forum")
@@ -89,15 +96,6 @@ public class ForumFragment extends Fragment implements OnItemClickListener<PostB
 		}
 
 		@Override
-		protected void onUnsuccess(int code, String data)
-		{
-			if (code == 200)
-				Toast.makeText(getActivity(), data, Toast.LENGTH_SHORT).show();
-			else
-				super.onUnsuccess(code, data);
-		}
-
-		@Override
 		protected void onFail()
 		{
 			Toast.makeText(getActivity(), "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
@@ -106,6 +104,7 @@ public class ForumFragment extends Fragment implements OnItemClickListener<PostB
 		@Override
 		protected void onSuccess(final List<PostBean> data)
 		{
+			ds.clear();
 			ds.addAll(data);
 			adapter.refresh(ds);
 		}
@@ -126,12 +125,6 @@ public class ForumFragment extends Fragment implements OnItemClickListener<PostB
 		}
 
 		@Override
-		protected void onUnsuccess(int code, String data)
-		{
-			super.onUnsuccess(code, data);
-		}
-
-		@Override
 		protected void onFail()
 		{
 			Toast.makeText(getActivity(), "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
@@ -147,12 +140,4 @@ public class ForumFragment extends Fragment implements OnItemClickListener<PostB
 			((TextView) dlg.findViewById(R.id.txt)).setText(Html.fromHtml(data.getDescribe()));
 		}
 	};
-
-	@Override
-	public void OnClick(PostBean data)
-	{
-		HashMap<String, Integer> dat = new HashMap<>();
-		dat.put("pid", data.getPid());
-		viewTask.post(dat);
-	}
 }
