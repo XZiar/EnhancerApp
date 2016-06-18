@@ -9,17 +9,16 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 import okhttp3.ResponseBody;
 import xziar.enhancer.R;
+import xziar.enhancer.activity.TaskViewActivity;
 import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.adapter.TaskAdapter;
 import xziar.enhancer.pojo.TaskBean;
@@ -71,9 +70,9 @@ public class TaskListFragment extends Fragment implements OnItemClickListener<Ta
 	@Override
 	public void OnClick(TaskBean data)
 	{
-		HashMap<String, Integer> dat = new HashMap<>();
-		dat.put("tid", data.getTid());
-		viewTask.post(dat);
+		Intent it = new Intent(getActivity(), TaskViewActivity.class);
+		it.putExtra("tid", data.getTid());
+		startActivityForResult(it, 1442);
 	}
 
 	private NetTask<List<TaskBean>> listTask = new NetTask<List<TaskBean>>("/app/task")
@@ -104,40 +103,5 @@ public class TaskListFragment extends Fragment implements OnItemClickListener<Ta
 		}
 	};
 	
-	private NetTask<TaskBean> viewTask = new NetTask<TaskBean>("/app/taskview")
-	{
-		@Override
-		protected TaskBean parse(ResponseBody data) throws IOException, ParseResultFailException
-		{
-			JSONObject obj = JSON.parseObject(data.string());
-			String msg = obj.getString("msg");
-			if (obj.getBooleanValue("success"))
-			{
-				return JSON.parseObject(obj.getString("task"), TaskBean.class);
-			}
-			throw new ParseResultFailException(msg);
-		}
 
-		@Override
-		protected void onUnsuccess(int code, String data)
-		{
-			super.onUnsuccess(code, data);
-		}
-
-		@Override
-		protected void onFail()
-		{
-			Toast.makeText(getActivity(), "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
-		}
-
-		@Override
-		protected void onSuccess(final TaskBean data)
-		{
-			AlertDialog dlg = new AlertDialog.Builder(getActivity()).setTitle("»°Ìâ")
-					.setView(R.layout.dialog_post).setPositiveButton("OK", null)
-					.setNegativeButton("CANCEL", null).create();
-			dlg.show();
-			((TextView) dlg.findViewById(R.id.txt)).setText(Html.fromHtml(data.getDescribe()));
-		}
-	};
 }

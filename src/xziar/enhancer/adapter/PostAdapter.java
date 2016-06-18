@@ -57,6 +57,6 @@ public class PostAdapter extends CommonAdapter<PostBean, PostAdapter.PostHolder>
 	@Override
 	public int compare(PostBean lhs, PostBean rhs)
 	{
-		return (int) (lhs.getTime_post() - rhs.getTime_post());
+		return (int) -(lhs.getTime_post() - rhs.getTime_post());// desc
 	}
 }

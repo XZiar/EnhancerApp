@@ -4,12 +4,14 @@ public class TaskBean
 {
 	public enum Status
 	{
-		oncheck, onapply, onliscene, ongoing, onfinish;
+		oncheck, onapply, onliscene, ongoing, onfinish, closed;
 	}
 
 	private int tid = -1;
 	private int uid = -1;
+	private int aid = -1;
 	private String launcher;
+	private String doer;
 	private long time_start;
 	private int time_last, time_modify;
 	private int applycount;
@@ -17,6 +19,8 @@ public class TaskBean
 	private int payment;
 	private String title;
 	private String describe;
+	private int sscored = -1;
+	private int cscored = -1;
 	private int limit_people, limit_score;
 
 	public TaskBean()
@@ -167,4 +171,45 @@ public class TaskBean
 	{
 		this.launcher = launcher;
 	}
+
+	public int getAid()
+	{
+		return aid;
+	}
+
+	public void setAid(int aid)
+	{
+		this.aid = aid;
+	}
+
+	public String getDoer()
+	{
+		return doer;
+	}
+
+	public void setDoer(String doer)
+	{
+		this.doer = doer;
+	}
+
+	public int getSscored()
+	{
+		return sscored;
+	}
+
+	public void setSscored(int sscored)
+	{
+		this.sscored = sscored;
+	}
+
+	public int getCscored()
+	{
+		return cscored;
+	}
+
+	public void setCscored(int cscored)
+	{
+		this.cscored = cscored;
+	}
+
 }

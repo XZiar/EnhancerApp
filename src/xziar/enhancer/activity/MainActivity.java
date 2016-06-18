@@ -15,6 +15,7 @@ import xziar.enhancer.fragment.ForumFragment;
 import xziar.enhancer.fragment.GroupFragment;
 import xziar.enhancer.fragment.TaskListFragment;
 import xziar.enhancer.fragment.UserFragment;
+import xziar.enhancer.pojo.TaskBean;
 import xziar.enhancer.pojo.UserBean;
 
 public class MainActivity extends AppCompatActivity implements OnMenuTabClickListener
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 	private static Context appcontext;
 
 	public static UserBean user;
+	public static TaskBean objtask;
 
 	private void initWidget()
 	{

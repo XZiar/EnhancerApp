@@ -9,17 +9,16 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 import okhttp3.ResponseBody;
 import xziar.enhancer.R;
+import xziar.enhancer.activity.PostViewActivity;
 import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.adapter.PostAdapter;
 import xziar.enhancer.pojo.PostBean;
@@ -75,9 +74,9 @@ public class ForumFragment extends Fragment implements OnItemClickListener<PostB
 	@Override
 	public void OnClick(PostBean data)
 	{
-		HashMap<String, Integer> dat = new HashMap<>();
-		dat.put("pid", data.getPid());
-		viewTask.post(dat);
+		Intent it = new Intent(getActivity(), PostViewActivity.class);
+		it.putExtra("pid", data.getPid());
+		startActivityForResult(it, 1442);
 	}
 
 	private NetTask<List<PostBean>> listTask = new NetTask<List<PostBean>>("/app/forum")
@@ -107,37 +106,6 @@ public class ForumFragment extends Fragment implements OnItemClickListener<PostB
 			ds.clear();
 			ds.addAll(data);
 			adapter.refresh(ds);
-		}
-	};
-
-	private NetTask<PostBean> viewTask = new NetTask<PostBean>("/app/postview")
-	{
-		@Override
-		protected PostBean parse(ResponseBody data) throws IOException, ParseResultFailException
-		{
-			JSONObject obj = JSON.parseObject(data.string());
-			String msg = obj.getString("msg");
-			if (obj.getBooleanValue("success"))
-			{
-				return JSON.parseObject(obj.getString("post"), PostBean.class);
-			}
-			throw new ParseResultFailException(msg);
-		}
-
-		@Override
-		protected void onFail()
-		{
-			Toast.makeText(getActivity(), "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
-		}
-
-		@Override
-		protected void onSuccess(final PostBean data)
-		{
-			AlertDialog dlg = new AlertDialog.Builder(getActivity()).setTitle("»°Ìâ")
-					.setView(R.layout.dialog_post).setPositiveButton("OK", null)
-					.setNegativeButton("CANCEL", null).create();
-			dlg.show();
-			((TextView) dlg.findViewById(R.id.txt)).setText(Html.fromHtml(data.getDescribe()));
 		}
 	};
 }

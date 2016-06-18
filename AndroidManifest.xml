@@ -32,6 +32,14 @@
             android:name=".activity.RegisterActivity"
             android:label="@string/title_activity_register" >
         </activity>
+        <activity
+            android:name=".activity.TaskViewActivity"
+            android:label="@string/title_activity_task_view" >
+        </activity>
+        <activity
+            android:name=".activity.PostViewActivity"
+            android:label="@string/title_activity_post_view" >
+        </activity>
     </application>
 
 </manifest>
