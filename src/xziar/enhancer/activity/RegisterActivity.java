@@ -1,10 +1,6 @@
 package xziar.enhancer.activity;
 
-import java.io.IOException;
 import java.util.HashMap;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -16,11 +12,10 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import okhttp3.ResponseBody;
 import xziar.enhancer.R;
 import xziar.enhancer.fragment.CpnRegFragment;
 import xziar.enhancer.fragment.StuRegFragment;
-import xziar.enhancer.util.NetworkUtil.NetTask;
+import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.widget.WaitDialog;
@@ -112,7 +107,8 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 		fragTrans.show(currentFrag = frag).commit();
 	}
 
-	private NetTask<JSONObject> regTask = new NetTask<JSONObject>("/register", true)
+	private NetBeanTask<String> regTask = new NetBeanTask<String>("/register", "msg", String.class,
+			false)
 	{
 		@Override
 		protected void onStart()
@@ -127,26 +123,20 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 		}
 
 		@Override
-		protected JSONObject parse(ResponseBody data) throws IOException
+		protected void onSuccess(String data)
 		{
-			return JSON.parseObject(data.string());
+			Toast.makeText(RegisterActivity.this, data, Toast.LENGTH_SHORT).show();
+			setResult(RESULT_OK, null);
+			finish();
 		}
 
 		@Override
-		protected void onFail()
+		protected void onUnsuccess(int code, String data)
 		{
-			Toast.makeText(RegisterActivity.this, "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
-		}
-
-		@Override
-		protected void onSuccess(final JSONObject data)
-		{
-			Toast.makeText(RegisterActivity.this, data.getString("msg"), Toast.LENGTH_SHORT).show();
-			if (data.getBooleanValue("success"))
-			{
-				setResult(RESULT_OK, null);
-				finish();
-			}
+			if (code == 200)
+				Toast.makeText(RegisterActivity.this, data, Toast.LENGTH_SHORT).show();
+			else
+				super.onUnsuccess(code, data);
 		}
 	};
 }

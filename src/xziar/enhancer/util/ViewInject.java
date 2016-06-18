@@ -109,7 +109,7 @@ public class ViewInject
 					{
 						Object view = meth.invoke(viewHolder, inj.getValue());
 						inj.getKey().set(obj, view);
-						Log.v(LogTag, inj.getKey().getName() + " <== " + view);
+						//Log.v(LogTag, inj.getKey().getName() + " <== " + view);
 					}
 				}
 				catch (IllegalAccessException | IllegalArgumentException

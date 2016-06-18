@@ -1,39 +1,42 @@
 package xziar.enhancer.fragment;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-import okhttp3.ResponseBody;
 import xziar.enhancer.R;
 import xziar.enhancer.activity.TaskViewActivity;
 import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.adapter.TaskAdapter;
 import xziar.enhancer.pojo.TaskBean;
-import xziar.enhancer.util.NetworkUtil.NetTask;
+import xziar.enhancer.util.NetworkUtil.NetBeanTask;
+import xziar.enhancer.util.ViewInject;
+import xziar.enhancer.util.ViewInject.BindView;
+import xziar.enhancer.util.ViewInject.ObjView;
 
-public class TaskListFragment extends Fragment implements OnItemClickListener<TaskBean>
+@ObjView("view")
+public class TaskListFragment extends Fragment
+		implements OnItemClickListener<TaskBean>, OnRefreshListener
 {
 	private View view;
-	private RecyclerView list;
+	ArrayList<TaskBean> ds = new ArrayList<>();
 	private TaskAdapter adapter;
-	ArrayList<TaskBean> ds = new ArrayList<>();;
+	@BindView(R.id.listwrap)
+	private SwipeRefreshLayout listwrap;
+	@BindView(R.id.list)
+	private RecyclerView list;
 
 	private void refreshData()
 	{
 		listTask.post("from", 0);
-		adapter.refresh(ds);
 	}
 
 	@Override
@@ -41,27 +44,14 @@ public class TaskListFragment extends Fragment implements OnItemClickListener<Ta
 			Bundle savedInstanceState)
 	{
 		view = inflater.inflate(R.layout.fragment_tasklist, container, false);
-		list = (RecyclerView) view.findViewById(R.id.list);
+		ViewInject.inject(this);
+		listwrap.setOnRefreshListener(this);
 		adapter = new TaskAdapter(getActivity());
 		adapter.setItemClick(this);
 		list.setAdapter(adapter);
 
 		refreshData();
 		return view;
-	}
-
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState)
-	{
-		super.onActivityCreated(savedInstanceState);
-	}
-
-	@Override
-	public void onHiddenChanged(boolean hidden)
-	{
-		super.onHiddenChanged(hidden);
-		if(!hidden)
-			refreshData();
 	}
 	
 	@Override
@@ -72,33 +62,27 @@ public class TaskListFragment extends Fragment implements OnItemClickListener<Ta
 		startActivityForResult(it, 1442);
 	}
 
-	private NetTask<List<TaskBean>> listTask = new NetTask<List<TaskBean>>("/app/task", true)
+	@Override
+	public void onRefresh()
+	{
+		refreshData();
+	}
+
+	private NetBeanTask<List<TaskBean>> listTask = new NetBeanTask<List<TaskBean>>("/task",
+			"tasks", TaskBean.class, true)
 	{
 		@Override
-		protected List<TaskBean> parse(ResponseBody data)
-				throws IOException, ParseResultFailException
+		protected void onDone()
 		{
-			JSONObject obj = JSON.parseObject(data.string());
-			if (obj.getBooleanValue("success"))
-				return JSON.parseArray(obj.getString("tasks"), TaskBean.class);
-			else
-				throw new ParseResultFailException(obj.getString("msg"));
-		}
-
-		@Override
-		protected void onFail()
-		{
-			Toast.makeText(getActivity(), "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
+			listwrap.setRefreshing(false);
 		}
 
 		@Override
 		protected void onSuccess(List<TaskBean> data)
 		{
-			ds.clear();
-			ds.addAll(data);
+			ds = new ArrayList<>(data);
 			adapter.refresh(ds);
 		}
 	};
-	
 
 }

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 
 import android.content.Context;
@@ -17,6 +18,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -378,4 +380,49 @@ public class NetworkUtil
 		{
 		};
 	}
+
+	public static class NetBeanTask<D> extends NetTask<D>
+	{
+		private final Class<?> clz;
+		private final String datname;
+		private final boolean isArray;
+
+		public NetBeanTask(String addr, String obj, Class<?> clz, boolean isArray)
+		{
+			super("/app" + addr, true);
+			this.clz = clz;
+			this.datname = obj;
+			this.isArray = isArray;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		protected D parse(ResponseBody data) throws IOException, ParseResultFailException
+		{
+			try
+			{
+				JSONObject obj = JSON.parseObject(data.string());
+				if (obj.getBooleanValue("success"))
+				{
+					if (isArray)
+						return (D) JSON.parseArray(obj.getString(datname), clz);
+					else
+						return (D) JSON.parseObject(obj.getString(datname), clz);
+				}
+				else
+					throw new ParseResultFailException(obj.getString("msg"));
+			}
+			catch (JSONException e)
+			{
+				Log.w(LogTag, "error when parse response to json", e);
+				throw new ParseResultFailException("error syntax");
+			}
+		}
+
+		@Override
+		protected void onFail()
+		{
+			Toast.makeText(MainActivity.getAppContext(), "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
+		}
+	};
 }
