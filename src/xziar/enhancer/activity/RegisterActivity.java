@@ -112,7 +112,7 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 		fragTrans.show(currentFrag = frag).commit();
 	}
 
-	private NetTask<JSONObject> regTask = new NetTask<JSONObject>("/register")
+	private NetTask<JSONObject> regTask = new NetTask<JSONObject>("/register", true)
 	{
 		@Override
 		protected void onStart()

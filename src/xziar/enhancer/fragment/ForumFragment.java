@@ -2,7 +2,6 @@ package xziar.enhancer.fragment;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import com.alibaba.fastjson.JSON;
@@ -52,9 +51,7 @@ public class ForumFragment extends Fragment implements OnItemClickListener<PostB
 
 	private void refreshData()
 	{
-		HashMap<String, Integer> dat = new HashMap<>();
-		dat.put("from", 0);
-		listTask.post(dat);
+		listTask.post("from", 0);
 	}
 
 	@Override
@@ -79,7 +76,7 @@ public class ForumFragment extends Fragment implements OnItemClickListener<PostB
 		startActivityForResult(it, 1442);
 	}
 
-	private NetTask<List<PostBean>> listTask = new NetTask<List<PostBean>>("/app/forum")
+	private NetTask<List<PostBean>> listTask = new NetTask<List<PostBean>>("/app/forum", true)
 	{
 		@Override
 		protected List<PostBean> parse(ResponseBody data)

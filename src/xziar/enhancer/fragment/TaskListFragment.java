@@ -2,7 +2,6 @@ package xziar.enhancer.fragment;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import com.alibaba.fastjson.JSON;
@@ -33,9 +32,7 @@ public class TaskListFragment extends Fragment implements OnItemClickListener<Ta
 
 	private void refreshData()
 	{
-		HashMap<String, Integer> dat = new HashMap<>();
-		dat.put("from", 0);
-		listTask.post(dat);
+		listTask.post("from", 0);
 		adapter.refresh(ds);
 	}
 
@@ -75,7 +72,7 @@ public class TaskListFragment extends Fragment implements OnItemClickListener<Ta
 		startActivityForResult(it, 1442);
 	}
 
-	private NetTask<List<TaskBean>> listTask = new NetTask<List<TaskBean>>("/app/task")
+	private NetTask<List<TaskBean>> listTask = new NetTask<List<TaskBean>>("/app/task", true)
 	{
 		@Override
 		protected List<TaskBean> parse(ResponseBody data)

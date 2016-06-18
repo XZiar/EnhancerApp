@@ -1,13 +1,13 @@
 package xziar.enhancer.activity;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,19 +23,24 @@ public class PostViewActivity extends AppCompatActivity
 	private PostBean post;
 	@BindView(R.id.describe)
 	TextView describe;
+	@BindView(R.id.actbar)
+	Toolbar toolbar;
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_task_view);
+		setContentView(R.layout.activity_post_view);
 		ViewInject.inject(this);
+		toolbar.setTitle("Hello Here");
+
+		setSupportActionBar(toolbar);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 		int pid = getIntent().getIntExtra("pid", -1);
-		HashMap<String, Integer> dat = new HashMap<>();
-		dat.put("pid", pid);
-		viewTask.post(dat);
+		viewTask.post("pid", pid);
 	}
 
-	private NetTask<PostBean> viewTask = new NetTask<PostBean>("/app/postview")
+	private NetTask<PostBean> viewTask = new NetTask<PostBean>("/app/postview", true)
 	{
 		@Override
 		protected PostBean parse(ResponseBody data) throws IOException, ParseResultFailException
@@ -65,7 +70,8 @@ public class PostViewActivity extends AppCompatActivity
 		protected void onSuccess(final PostBean data)
 		{
 			post = data;
-			describe.setText(Html.fromHtml(data.getDescribe()));
+			String txt = data.getDescribe() + data.getDescribe() + data.getDescribe();
+			describe.setText(Html.fromHtml(txt));
 		}
 	};
 }

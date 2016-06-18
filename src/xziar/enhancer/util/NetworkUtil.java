@@ -6,6 +6,7 @@ import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketTimeoutException;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
@@ -74,14 +75,6 @@ public class NetworkUtil
 		}
 	}
 
-	public static void Test(Callback callback)
-	{
-		RequestBody formBody = new FormBody.Builder().add("un", "student").add("pwd", "student")
-				.build();
-		Request request = new Request.Builder().url(baseUrl + "/login").post(formBody).build();
-		client.newCall(request).enqueue(callback);
-	}
-
 	public static class NetCBHandler<D> extends Handler
 	{
 		private WeakReference<NetTask<D>> ref;
@@ -145,11 +138,19 @@ public class NetworkUtil
 
 		protected NetCBHandler<D> handler;
 		protected String url;
+		protected final boolean isSingleton;
+		protected boolean isRunning;
 
-		public NetTask(String addr)
+		public NetTask(String addr, boolean isSingleton)
 		{
 			handler = new NetCBHandler<D>(this);
 			url = baseUrl + addr;
+			this.isSingleton = isSingleton;
+		}
+
+		public NetTask(String addr)
+		{
+			this(addr, false);
 		}
 
 		/**
@@ -163,7 +164,10 @@ public class NetworkUtil
 		public final void post(Map<String, ? extends Object> form, boolean isMultiPart)
 		{
 			if (!isMultiPart)
+			{
 				post(form);
+				return;
+			}
 			MultipartBody.Builder fbBuilder = new MultipartBody.Builder();
 			fbBuilder.setType(MultipartBody.FORM);
 			for (Map.Entry<String, ? extends Object> e : form.entrySet())
@@ -204,12 +208,34 @@ public class NetworkUtil
 			run(request);
 		}
 
+		/**
+		 * post action
+		 * 
+		 * @param args
+		 *            argments to form the form, expected an even number of
+		 *            argment
+		 * @throws IllegalArgumentException
+		 */
+		public final void post(Object... args) throws IllegalArgumentException
+		{
+			if (args.length % 2 != 0)
+				throw new IllegalArgumentException(
+						String.format("receive %d argment, expected an even number", args.length));
+			HashMap<String, Object> form = new HashMap<>();
+			for (int a = 0; a < args.length; a += 2)
+				form.put(args[a].toString(), args[a + 1]);
+			post(form);
+		}
+
 		public void get()
 		{
 		}
 
 		protected final void run(Request request)
 		{
+			if (isSingleton && isRunning)
+				return;
+			isRunning = true;
 			client.newCall(request).enqueue(this);
 			onStart();
 		}
@@ -229,6 +255,7 @@ public class NetworkUtil
 				msg.obj = e;
 			}
 			msg.sendToTarget();
+			isRunning = false;
 		}
 
 		@Override
@@ -252,8 +279,8 @@ public class NetworkUtil
 			}
 			catch (IOException e)
 			{
-				msg.obj = e;
 				msg.what = RetCode.Fail.ordinal();
+				msg.obj = e;
 			}
 			catch (ParseResultFailException e)
 			{
@@ -262,6 +289,7 @@ public class NetworkUtil
 				msg.obj = e.getMsg();
 			}
 			msg.sendToTarget();
+			isRunning = false;
 		};
 
 		/**

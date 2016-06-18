@@ -109,8 +109,7 @@ public class ViewInject
 					{
 						Object view = meth.invoke(viewHolder, inj.getValue());
 						inj.getKey().set(obj, view);
-						// Log.v(LogTag, inj.getKey().getName() + " <== " +
-						// inj.getValue());
+						Log.v(LogTag, inj.getKey().getName() + " <== " + view);
 					}
 				}
 				catch (IllegalAccessException | IllegalArgumentException
@@ -135,7 +134,6 @@ public class ViewInject
 
 		ctime = System.nanoTime() - ctime;
 		elapse += ctime;
-		Log.i(LogTag, "excute time " + ctime / 1000000 + "ms, total "
-				+ elapse / 1000000 + "ms");
+		Log.i(LogTag, "excute time " + ctime / 1000000 + "ms, total " + elapse / 1000000 + "ms");
 	}
 }
