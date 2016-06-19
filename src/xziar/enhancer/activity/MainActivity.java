@@ -17,6 +17,9 @@ import xziar.enhancer.fragment.TaskListFragment;
 import xziar.enhancer.fragment.UserFragment;
 import xziar.enhancer.pojo.TaskBean;
 import xziar.enhancer.pojo.UserBean;
+import xziar.enhancer.util.ViewInject;
+import xziar.enhancer.util.ViewInject.BindView;
+import xziar.enhancer.widget.ActionBar;
 
 public class MainActivity extends AppCompatActivity implements OnMenuTabClickListener
 {
@@ -27,6 +30,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 	private ForumFragment forumFrag;
 	private GroupFragment groupFrag;
 	private UserFragment userFrag;
+	@BindView(R.id.actbar)
+	private ActionBar actbar;
 
 	private static Context appcontext;
 
@@ -57,9 +62,15 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
+		appcontext = getApplicationContext();
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		appcontext = getApplicationContext();
+		ViewInject.inject(this);
+
+		actbar.setTitle("biaoti-xxxxx");
+		actbar.setSubtitle("subtitle");
+		actbar.setupActionBar(this);
+
 		bottombar = BottomBar.attach(this, savedInstanceState);
 		initWidget();
 	}
@@ -108,5 +119,10 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 	public static Context getAppContext()
 	{
 		return appcontext;
+	}
+
+	public void setTitle(String title)
+	{
+		actbar.setTitle(title);
 	}
 }

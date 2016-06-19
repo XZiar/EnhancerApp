@@ -1,7 +1,5 @@
 package xziar.enhancer.activity;
 
-import java.util.HashMap;
-
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
@@ -11,23 +9,30 @@ import xziar.enhancer.pojo.TaskBean;
 import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
+import xziar.enhancer.widget.ActionBar;
 
 public class TaskViewActivity extends AppCompatActivity
 {
 	private TaskBean task;
-	public boolean tmp = false;
 	@BindView(R.id.describe)
-	TextView describe;
+	private TextView describe;
+	@BindView(R.id.actbar)
+	private ActionBar actbar;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_task_view);
 		ViewInject.inject(this);
+		actbar.setTitle("话题");
+		actbar.setSubtitle("发起人");
+
+		actbar.setupActionBar(this);
+		actbar.setBackButton(true);
+
 		int tid = getIntent().getIntExtra("tid", -1);
-		HashMap<String, Integer> dat = new HashMap<>();
-		dat.put("tid", tid);
-		viewTask.post(dat);
+		viewTask.post("tid", tid);
 	}
 
 	private NetBeanTask<TaskBean> viewTask = new NetBeanTask<TaskBean>("/taskview", "task",
@@ -37,7 +42,10 @@ public class TaskViewActivity extends AppCompatActivity
 		protected void onSuccess(TaskBean data)
 		{
 			task = data;
-			describe.setText(Html.fromHtml(data.getDescribe()));
+			String txt = task.getDescribe() + task.getDescribe() + task.getDescribe();
+			describe.setText(Html.fromHtml(txt));
+			actbar.setTitle(task.getTitle());
+			actbar.setSubtitle(task.getLauncher());
 		}
 	};
 }

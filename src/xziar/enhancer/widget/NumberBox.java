@@ -23,16 +23,15 @@ public class NumberBox extends LinearLayout
 		this.context = context;
 		setOrientation(LinearLayout.VERTICAL);
 		setGravity(Gravity.CENTER_VERTICAL);
-		View v = ((LayoutInflater) (context
-				.getSystemService(Context.LAYOUT_INFLATER_SERVICE)))
-						.inflate(R.layout.item_infobox, this, true);
+
+		View v = LayoutInflater.from(context).inflate(R.layout.item_infobox, this, true);
 		label = (TextView) v.findViewById(R.id.label);
 		val = (TextView) v.findViewById(R.id.val);
 		{
-			TypedArray ta = context.getTheme().obtainStyledAttributes(attrs,
-					R.styleable.NumberBox, defStyleAttr, 0);
-			float txtsize = SizeUtil.px2sp((int) ta.getDimension(
-					R.styleable.NumberBox_android_textSize, defTextSize));
+			TypedArray ta = context.getTheme().obtainStyledAttributes(attrs, R.styleable.NumberBox,
+					defStyleAttr, 0);
+			float txtsize = SizeUtil.px2sp(
+					(int) ta.getDimension(R.styleable.NumberBox_android_textSize, defTextSize));
 			val.setTextSize(txtsize);
 			label.setTextSize(txtsize * 0.6f);
 			CharSequence ltxt = ta.getText(R.styleable.NumberBox_android_label);

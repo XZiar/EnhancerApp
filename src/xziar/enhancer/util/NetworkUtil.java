@@ -50,6 +50,7 @@ public class NetworkUtil
 		{
 			byte[] dat = new byte[ins.available()];
 			ins.read(dat, 0, ins.available());
+			ins.close();
 			data = JSON.parseObject(new String(dat, "UTF-8"));
 		}
 		catch (IOException e)

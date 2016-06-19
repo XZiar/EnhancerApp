@@ -2,7 +2,6 @@ package xziar.enhancer.activity;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.widget.TextView;
 import xziar.enhancer.R;
@@ -10,24 +9,27 @@ import xziar.enhancer.pojo.PostBean;
 import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
+import xziar.enhancer.widget.ActionBar;
 
 public class PostViewActivity extends AppCompatActivity
 {
 	private PostBean post;
 	@BindView(R.id.describe)
-	TextView describe;
+	private TextView describe;
 	@BindView(R.id.actbar)
-	Toolbar toolbar;
+	private ActionBar actbar;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_post_view);
 		ViewInject.inject(this);
-		toolbar.setTitle("Hello Here");
+		actbar.setTitle("话题");
+		actbar.setSubtitle("发起人");
 
-		setSupportActionBar(toolbar);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		actbar.setupActionBar(this);
+		actbar.setBackButton(true);
 
 		int pid = getIntent().getIntExtra("pid", -1);
 		viewTask.post("pid", pid);
@@ -40,8 +42,10 @@ public class PostViewActivity extends AppCompatActivity
 		protected void onSuccess(final PostBean data)
 		{
 			post = data;
-			String txt = data.getDescribe() + data.getDescribe() + data.getDescribe();
+			String txt = post.getDescribe() + post.getDescribe() + post.getDescribe();
 			describe.setText(Html.fromHtml(txt));
+			actbar.setTitle(post.getTitle());
+			actbar.setSubtitle(post.getPoster());
 		}
 	};
 }
