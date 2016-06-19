@@ -96,7 +96,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
-        android:hint="负责人证件照" >
+        android:label="负责人证件照" >
 
         <ImageView
             android:id="@+id/pic_legal"
@@ -112,7 +112,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
-        android:hint="公司营业执照" >
+        android:label="公司营业执照" >
 
         <ImageView
             android:id="@+id/pic_coltd"
