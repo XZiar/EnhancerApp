@@ -44,7 +44,7 @@ public class ForumFragment extends Fragment
 		adapter = new PostAdapter(getActivity());
 		adapter.setItemClick(this);
 		list.setAdapter(adapter);
-
+		listTask.init(getActivity());
 		refreshData();
 		return view;
 	}
@@ -68,8 +68,8 @@ public class ForumFragment extends Fragment
 		refreshData();
 	}
 
-	private NetBeanTask<List<PostBean>> listTask = new NetBeanTask<List<PostBean>>("/forum",
-			"posts", PostBean.class, true)
+	private NetBeanTask<List<PostBean>> listTask = new NetBeanTask<List<PostBean>>(
+			"/forum", "posts", PostBean.class, true)
 	{
 		@Override
 		protected void onDone()

@@ -49,7 +49,7 @@ public class TaskListFragment extends Fragment
 		adapter = new TaskAdapter(getActivity());
 		adapter.setItemClick(this);
 		list.setAdapter(adapter);
-
+		listTask.init(getActivity());
 		refreshData();
 		return view;
 	}
@@ -68,8 +68,8 @@ public class TaskListFragment extends Fragment
 		refreshData();
 	}
 
-	private NetBeanTask<List<TaskBean>> listTask = new NetBeanTask<List<TaskBean>>("/task",
-			"tasks", TaskBean.class, true)
+	private NetBeanTask<List<TaskBean>> listTask = new NetBeanTask<List<TaskBean>>(
+			"/task", "tasks", TaskBean.class, true)
 	{
 		@Override
 		protected void onDone()

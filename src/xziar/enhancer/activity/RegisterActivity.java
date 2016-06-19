@@ -61,6 +61,7 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_register);
 		initWidget();
+		regTask.init(this);
 	}
 
 	@Override
@@ -107,8 +108,8 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 		fragTrans.show(currentFrag = frag).commit();
 	}
 
-	private NetBeanTask<String> regTask = new NetBeanTask<String>("/register", "msg", String.class,
-			false)
+	private NetBeanTask<String> regTask = new NetBeanTask<String>("/register", "msg",
+			String.class, false)
 	{
 		@Override
 		protected void onStart()

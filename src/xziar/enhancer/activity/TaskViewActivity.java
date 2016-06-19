@@ -31,6 +31,7 @@ public class TaskViewActivity extends AppCompatActivity
 		actbar.setupActionBar(this);
 		actbar.setBackButton(true);
 
+		viewTask.init(this);
 		int tid = getIntent().getIntExtra("tid", -1);
 		viewTask.post("tid", tid);
 	}

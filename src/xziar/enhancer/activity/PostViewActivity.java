@@ -30,7 +30,7 @@ public class PostViewActivity extends AppCompatActivity
 
 		actbar.setupActionBar(this);
 		actbar.setBackButton(true);
-
+		viewTask.init(this);
 		int pid = getIntent().getIntExtra("pid", -1);
 		viewTask.post("pid", pid);
 	}

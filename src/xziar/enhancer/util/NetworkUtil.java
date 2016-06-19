@@ -6,7 +6,9 @@ import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
@@ -21,11 +23,14 @@ import android.util.Log;
 import android.widget.Toast;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
+import okhttp3.OkHttpClient.Builder;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -41,8 +46,29 @@ public class NetworkUtil
 	private static final Proxy proxy;
 	public static HttpUrl baseUrl;
 
+	private static final CookieJar cookiejar = new CookieJar()
+	{
+		private final HashMap<String, List<Cookie>> cookieMap = new HashMap<>();
+
+		@Override
+		public void saveFromResponse(HttpUrl url, List<Cookie> cookies)
+		{
+			cookieMap.put(url.host(), cookies);
+			Log.d(LogTag, "new cookies from " + url.host() + "\n");
+			for (Cookie ck : cookies)
+				Log.d(LogTag, "\r " + ck.toString());
+		}
+
+		@Override
+		public List<Cookie> loadForRequest(HttpUrl url)
+		{
+			List<Cookie> cookies = cookieMap.get(url.host());
+			return cookies == null ? new ArrayList<Cookie>() : cookies;
+		}
+	};
 	static
 	{
+		Builder builder = new OkHttpClient.Builder().cookieJar(cookiejar);
 		context = MainActivity.getAppContext();
 		InputStream ins = context.getResources().openRawResource(R.raw.network);
 		JSONObject data = new JSONObject();
@@ -69,13 +95,13 @@ public class NetworkUtil
 			proxy = new Proxy(Proxy.Type.valueOf(JOproxy.getString("type")),
 					new InetSocketAddress(JOproxy.getString("host"), JOproxy.getIntValue("port")));
 			Log.d(LogTag, "proxy : " + proxy.toString());
-			client = new OkHttpClient.Builder().proxy(proxy).build();
+			builder.proxy(proxy);
 		}
 		else
 		{
 			proxy = null;
-			client = new OkHttpClient();
 		}
+		client = builder.build();
 	}
 
 	public static class NetCBHandler<D> extends Handler
@@ -143,6 +169,7 @@ public class NetworkUtil
 		protected String url;
 		protected final boolean isSingleton;
 		protected boolean isRunning;
+		protected Object taskdata;
 
 		public NetTask(String addr, boolean isSingleton)
 		{
@@ -154,6 +181,30 @@ public class NetworkUtil
 		public NetTask(String addr)
 		{
 			this(addr, false);
+		}
+
+		/**
+		 * set essential data of the task (without thread-safe gerantee)
+		 * 
+		 * @param taskdata
+		 *            essential data of the task
+		 * @return
+		 * 		NetTask itself
+		 */
+		public final NetTask<D> withData(Object taskdata)
+		{
+			this.taskdata = taskdata;
+			return this;
+		}
+
+		/**
+		 * get essential data of the task
+		 * 
+		 * @return
+		 */
+		protected final Object getTaskdata()
+		{
+			return taskdata;
 		}
 
 		/**
@@ -387,6 +438,7 @@ public class NetworkUtil
 		private final Class<?> clz;
 		private final String datname;
 		private final boolean isArray;
+		protected Context context = MainActivity.getAppContext();
 
 		public NetBeanTask(String addr, String obj, Class<?> clz, boolean isArray)
 		{
@@ -394,6 +446,11 @@ public class NetworkUtil
 			this.clz = clz;
 			this.datname = obj;
 			this.isArray = isArray;
+		}
+
+		public final void init(Context context)
+		{
+			this.context = context;
 		}
 
 		@SuppressWarnings("unchecked")
@@ -423,7 +480,7 @@ public class NetworkUtil
 		@Override
 		protected void onFail()
 		{
-			Toast.makeText(MainActivity.getAppContext(), "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
+			Toast.makeText(context, "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
 		}
 	};
 }

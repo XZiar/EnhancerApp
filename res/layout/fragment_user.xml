@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp" >
+        android:padding="8dp" >
 
         <ImageView
             android:id="@+id/headimg"
@@ -17,7 +17,7 @@
             android:layout_height="80dp"
             android:layout_gravity="center"
             android:layout_marginBottom="8dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="8dp"
             android:scaleType="fitXY"
             android:src="@drawable/defaulthead" />
 
@@ -88,15 +88,45 @@
         android:layout_height="wrap_content"
         android:divider="@drawable/divider_vertical"
         android:orientation="vertical"
-        android:padding="12dp"
+        android:padding="8dp"
         android:showDividers="middle" >
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@drawable/divider_vertical" />
 
         <TextView
             android:id="@+id/chgpwd"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
+            android:paddingEnd="32dp"
             android:paddingStart="32dp"
+            android:paddingTop="8dp"
             android:text="修改密码"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/ongoing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
+            android:paddingEnd="32dp"
+            android:paddingStart="32dp"
+            android:paddingTop="8dp"
+            android:text="进行中任务"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/finish"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
+            android:paddingEnd="32dp"
+            android:paddingStart="32dp"
+            android:paddingTop="8dp"
+            android:text="已完成任务"
             android:textSize="20sp" />
     </LinearLayout>
 

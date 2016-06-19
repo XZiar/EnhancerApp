@@ -1,6 +1,9 @@
 package xziar.enhancer.fragment;
 
+import android.annotation.SuppressLint;
 import android.app.Fragment;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -8,26 +11,37 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import xziar.enhancer.R;
 import xziar.enhancer.activity.LoginActivity;
 import xziar.enhancer.activity.MainActivity;
 import xziar.enhancer.pojo.AccountBean.Role;
 import xziar.enhancer.pojo.UserBean;
 import xziar.enhancer.util.CircleImageUtil;
+import xziar.enhancer.util.NetworkUtil.NetBeanTask;
+import xziar.enhancer.util.NetworkUtil.NetTask;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.util.ViewInject.ObjView;
 import xziar.enhancer.widget.NumberBox;
 
 @ObjView("view")
-public class UserFragment extends Fragment implements OnClickListener
+public class UserFragment extends Fragment
+		implements OnClickListener, android.content.DialogInterface.OnClickListener
 {
-	private static final int REQUESTCODE_LOGIN = 1;
+	private static enum reqCode
+	{
+		login, chghead
+	}
+
 	private View view;
 	private UserBean user;
+	private AlertDialog logoutDlg, chgpwdDlg, chgheadDlg;
+	private EditText oldpwd, newpwd;
 	@BindView(R.id.loginarea)
 	private LinearLayout loginarea;
 	@BindView(R.id.headimg)
@@ -46,6 +60,26 @@ public class UserFragment extends Fragment implements OnClickListener
 	private LinearLayout oparea;
 	@BindView(R.id.chgpwd)
 	private TextView chgpwd;
+	@BindView(R.id.ongoing)
+	private TextView ongoing;
+	@BindView(R.id.finish)
+	private TextView finish;
+
+	@SuppressLint("InflateParams")
+	private void initDialog(Context context)
+	{
+		logoutDlg = new AlertDialog.Builder(context).setTitle("退出登录").setMessage("确定退出登录吗？")
+				.setPositiveButton("OK", this).setNegativeButton("CANCEL", null).create();
+
+		View chgpwdView = LayoutInflater.from(context).inflate(R.layout.dialog_chgpwd, null);
+		oldpwd = (EditText) chgpwdView.findViewById(R.id.oldpwd);
+		newpwd = (EditText) chgpwdView.findViewById(R.id.newpwd);
+		chgpwdDlg = new AlertDialog.Builder(context).setTitle("修改密码").setView(chgpwdView)
+				.setPositiveButton("修改", this).setNegativeButton("放弃", null).create();
+
+		chgheadDlg = new AlertDialog.Builder(context).setTitle("头像").setPositiveButton("OK", this)
+				.setNegativeButton("CANCEL", null).create();
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -56,6 +90,8 @@ public class UserFragment extends Fragment implements OnClickListener
 		headimg.setOnClickListener(this);
 		loginarea.setOnClickListener(this);
 		chgpwd.setOnClickListener(this);
+		initDialog(getActivity());
+		chginfoTask.init(getActivity());
 		return view;
 	}
 
@@ -127,22 +163,78 @@ public class UserFragment extends Fragment implements OnClickListener
 			if (v == loginarea || v == headimg)
 			{
 				Intent it = new Intent(getActivity(), LoginActivity.class);
-				startActivityForResult(it, REQUESTCODE_LOGIN);
+				startActivityForResult(it, reqCode.login.ordinal());
 			}
 			return;
 		}
 		if (v == headimg)
 		{
-			AlertDialog dlg = new AlertDialog.Builder(getActivity()).setTitle("头像")
-					.setPositiveButton("OK", null).setNegativeButton("CANCEL", null).create();
-			dlg.show();
+			chgheadDlg.show();
+		}
+		else if (v == loginarea)
+		{
+			logoutDlg.show();
 		}
 		else if (v == chgpwd)
 		{
-			AlertDialog dlg = new AlertDialog.Builder(getActivity()).setTitle("修改")
-					.setView(R.layout.dialog_chgpwd).setPositiveButton("修改", null)
-					.setNegativeButton("放弃", null).create();
-			dlg.show();
+			oldpwd.setText("");
+			newpwd.setText("");
+			chgpwdDlg.show();
+		}
+
+	}
+
+	@Override
+	public void onClick(DialogInterface dialog, int which)
+	{
+		if (which != DialogInterface.BUTTON_POSITIVE)
+		{
+			dialog.dismiss();
+			return;
+		}
+		if (dialog == logoutDlg)
+		{
+			logoutTask.post();
+		}
+		else if (dialog == chgpwdDlg)
+		{
+			chginfoTask.withData(newpwd.getText().toString()).post("oldpwd", oldpwd.getText(),
+					"newpwd", newpwd.getText(), "des", user.getDescribe());
+		}
+		else if (dialog == chgheadDlg)
+		{
+			dialog.dismiss();
 		}
 	}
+
+	private NetTask<String> logoutTask = new NetTask<String>("/chgmyinfo", true)
+	{
+		@Override
+		protected void onSuccess(String data)
+		{
+			MainActivity.user = null;
+			logoutDlg.dismiss();
+			refreshData();
+		}
+	};
+
+	private NetBeanTask<String> chginfoTask = new NetBeanTask<String>("/chgmyinfo", "msg",
+			String.class, false)
+	{
+		@Override
+		protected void onSuccess(String data)
+		{
+			MainActivity.user.setPwd((String) getTaskdata());
+			chgpwdDlg.dismiss();
+		}
+
+		@Override
+		protected void onUnsuccess(int code, String data)
+		{
+			if (code == 200)
+				Toast.makeText(context, data, Toast.LENGTH_SHORT).show();
+			else
+				super.onUnsuccess(code, data);
+		}
+	};
 }
