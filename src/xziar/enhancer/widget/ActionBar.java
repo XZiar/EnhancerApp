@@ -38,7 +38,8 @@ import xziar.enhancer.util.ViewInject.BindView;
 public class ActionBar extends AppBarLayout implements OnClickListener
 {
 	private static final String LogTag = "ActionBar";
-	private static final int imgPad;
+	private static final int imgPad, defElevaton;
+	public final MenuItem action_top, action_back;
 	private SoftReference<AppCompatActivity> ref;
 	private Context context;
 	private MenuInflater menuInf;
@@ -63,6 +64,7 @@ public class ActionBar extends AppBarLayout implements OnClickListener
 	static
 	{
 		imgPad = SizeUtil.dp2px(12);
+		defElevaton = SizeUtil.dp2px(4);
 	}
 
 	private int transGravity(int val)
@@ -101,11 +103,14 @@ public class ActionBar extends AppBarLayout implements OnClickListener
 		tvSubtitle.setTextColor(color);
 		setTitle(ta.getText(R.styleable.ActionBar_android_title));
 		setSubtitle(ta.getText(R.styleable.ActionBar_android_subtitle));
-		int elevation = (int) ta.getDimension(R.styleable.ActionBar_android_elevation,
-				SizeUtil.dp2px(3));
-		shadow.setLayoutParams(
-				new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, elevation));
+		int elevation = (int) ta.getDimension(R.styleable.ActionBar_android_elevation, defElevaton);
+		RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) shadow.getLayoutParams();
+		lp.height = elevation;
+		shadow.setLayoutParams(lp);
 		ta.recycle();
+
+		action_top = new ActionMenuItem(context, 0, R.id.action_top, 100, 0, "BackToTop");
+		action_back = new ActionMenuItem(context, 0, R.id.action_back, 100, 0, "Back");
 	}
 
 	public ActionBar(Context context, AttributeSet attrs)
@@ -254,10 +259,9 @@ public class ActionBar extends AppBarLayout implements OnClickListener
 
 	protected void addButton(MenuItem item, View button, boolean isLeft)
 	{
-		button.setOnClickListener(this);
 		btnMap.put(button, item);
 		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
-				LayoutParams.WRAP_CONTENT);
+				LayoutParams.MATCH_PARENT);
 		lp.gravity = Gravity.CENTER;
 		ArrayList<View> padObj, padOther;
 		LinearLayout barObj, barOther;
@@ -291,6 +295,7 @@ public class ActionBar extends AppBarLayout implements OnClickListener
 			padView.setVisibility(View.INVISIBLE);
 			barObj.addView(button, -1, lp);
 		}
+		button.setOnClickListener(this);
 	}
 
 	public void setupActionBar(AppCompatActivity activity)
@@ -301,8 +306,11 @@ public class ActionBar extends AppBarLayout implements OnClickListener
 
 	public void setBackButton(boolean isEnable)
 	{
-		if (isEnable)
-			addMenu(R.id.action_back, R.drawable.icon_back, true);
+		if (isEnable && !btnMap.values().contains(action_back))
+		{
+			View btn = genButton(R.drawable.icon_back);
+			addButton(action_back, btn, true);
+		}
 	}
 
 	public void setSubtitle(CharSequence txt)

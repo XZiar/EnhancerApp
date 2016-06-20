@@ -7,6 +7,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import xziar.enhancer.R;
 import xziar.enhancer.fragment.ForumFragment;
 import xziar.enhancer.fragment.GroupFragment;
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 	private UserFragment userFrag;
 	@BindView(R.id.actbar)
 	private ActionBar actbar;
+	@BindView(R.id.main)
+	private LinearLayout mainholder;
 
 	private static Context appcontext;
 	public static UserBean user;
@@ -91,7 +94,8 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 	@Override
 	public void onMenuTabReSelected(int menuItemId)
 	{
-		// TODO Auto-generated method stub
+		fragMan.getCurFrag().onOptionsItemSelected(actbar.action_top);
+		mainholder.scrollTo(0, 0);
 	}
 
 	@Override
