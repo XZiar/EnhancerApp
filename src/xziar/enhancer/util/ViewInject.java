@@ -102,30 +102,39 @@ public class ViewInject
 			{
 				Object viewHolder = (f == null ? obj : f.get(obj));
 				Class<?> holderClz = viewHolder.getClass();
-				Method meth = loadMeth(holderClz);
 				try
 				{
+					Method meth = loadMeth(holderClz);
 					for (Map.Entry<Field, Integer> inj : injects.entrySet())
 					{
-						Object view = meth.invoke(viewHolder, inj.getValue());
-						inj.getKey().set(obj, view);
-						// Log.v(LogTag, inj.getKey().getName() + " <== " +
-						// inj.getValue());
+						try
+						{
+							Object view = meth.invoke(viewHolder, inj.getValue());
+							try
+							{
+								inj.getKey().set(obj, view);
+							}
+							catch (IllegalAccessException | IllegalArgumentException e)
+							{
+								Log.e(LogTag, "error when do inject\n" + inj.getKey().getName()
+										+ " <== " + view, e);
+							}
+						}
+						catch (InvocationTargetException e)
+						{
+							Log.e(LogTag, "error when findViewById on " + viewHolder + " ==> "
+									+ inj.getValue(), e);
+						}
 					}
 				}
-				catch (IllegalAccessException | IllegalArgumentException
-						| InvocationTargetException e)
+				catch (NoSuchMethodException e)
 				{
-					Log.e(LogTag, "error when do inject", e);
+					Log.e(LogTag, "error when loadmeth: " + holderClz.getName(), e);
 				}
 			}
 			catch (IllegalAccessException | IllegalArgumentException e)
 			{
 				Log.e(LogTag, "error when get viewHolder", e);
-			}
-			catch (NoSuchMethodException e1)
-			{
-				Log.e(LogTag, "error when loadmeth", e1);
 			}
 		}
 		catch (NoSuchFieldException | NoSuchMethodException e)
@@ -135,7 +144,6 @@ public class ViewInject
 
 		ctime = System.nanoTime() - ctime;
 		elapse += ctime;
-		Log.i(LogTag, "excute time " + ctime / 1000000 + "ms, total "
-				+ elapse / 1000000 + "ms");
+		Log.i(LogTag, "excute time " + ctime / 1000000 + "ms, total " + elapse / 1000000 + "ms");
 	}
 }

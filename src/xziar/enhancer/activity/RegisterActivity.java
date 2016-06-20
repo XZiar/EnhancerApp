@@ -1,14 +1,7 @@
 package xziar.enhancer.activity;
 
-import java.io.IOException;
 import java.util.HashMap;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -16,19 +9,18 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import okhttp3.ResponseBody;
 import xziar.enhancer.R;
 import xziar.enhancer.fragment.CpnRegFragment;
 import xziar.enhancer.fragment.StuRegFragment;
-import xziar.enhancer.util.NetworkUtil.NetTask;
+import xziar.enhancer.util.FragManager;
+import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.widget.WaitDialog;
 
 public class RegisterActivity extends AppCompatActivity implements OnClickListener
 {
-	private FragmentManager fragMan;
-	private Fragment currentFrag;
+	private FragManager fragMan;
 	private StuRegFragment stuFrag;
 	private CpnRegFragment cpnFrag;
 	private WaitDialog waitDialog;
@@ -53,9 +45,8 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 		waitDialog = new WaitDialog(this, " ×¢²áÖÐ... ...");
 		stuFrag = new StuRegFragment();
 		cpnFrag = new CpnRegFragment();
-		fragMan = getFragmentManager();
-		fragMan.beginTransaction().add(R.id.regcontent, currentFrag = stuFrag)
-				.add(R.id.regcontent, cpnFrag).hide(cpnFrag).commit();
+		fragMan = new FragManager(this, R.id.regcontent);
+		fragMan.add(stuFrag, cpnFrag).hideAll().show(stuFrag).doit();
 		btn_stu.setBackgroundResource(R.color.colorAccent);
 		btn_cpn.setBackgroundResource(R.color.iron);
 	}
@@ -66,6 +57,7 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_register);
 		initWidget();
+		regTask.init(this);
 	}
 
 	@Override
@@ -73,7 +65,7 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 	{
 		if (v == btn_register)
 		{
-			if (currentFrag == stuFrag)
+			if (fragMan.getCurFrag() == stuFrag)
 			{
 				HashMap<String, String> data = stuFrag.getData();
 				data.put("stu.un", un.getText().toString());
@@ -92,27 +84,22 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 		{
 			btn_stu.setBackgroundResource(R.color.colorAccent);
 			btn_cpn.setBackgroundResource(R.color.iron);
-			changeFrag(stuFrag);
+			fragMan.change(stuFrag).doit();
+			;
 		}
 		else if (v == btn_cpn)
 		{
 			btn_cpn.setBackgroundResource(R.color.colorAccent);
 			btn_stu.setBackgroundResource(R.color.iron);
-			changeFrag(cpnFrag);
+			fragMan.change(cpnFrag).doit();
+			;
 		}
 		else
 			Toast.makeText(this, v.getClass().getName(), Toast.LENGTH_SHORT).show();
 	}
 
-	private void changeFrag(Fragment frag)
-	{
-		if (currentFrag == frag)
-			return;
-		FragmentTransaction fragTrans = fragMan.beginTransaction().hide(currentFrag);
-		fragTrans.show(currentFrag = frag).commit();
-	}
-
-	private NetTask<JSONObject> regTask = new NetTask<JSONObject>("/register")
+	private NetBeanTask<String> regTask = new NetBeanTask<String>("/register", "msg",
+			String.class, false)
 	{
 		@Override
 		protected void onStart()
@@ -127,26 +114,20 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 		}
 
 		@Override
-		protected JSONObject parse(ResponseBody data) throws IOException
+		protected void onSuccess(String data)
 		{
-			return JSON.parseObject(data.string());
+			Toast.makeText(RegisterActivity.this, data, Toast.LENGTH_SHORT).show();
+			setResult(RESULT_OK, null);
+			finish();
 		}
 
 		@Override
-		protected void onFail()
+		protected void onUnsuccess(int code, String data)
 		{
-			Toast.makeText(RegisterActivity.this, "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
-		}
-
-		@Override
-		protected void onSuccess(final JSONObject data)
-		{
-			Toast.makeText(RegisterActivity.this, data.getString("msg"), Toast.LENGTH_SHORT).show();
-			if (data.getBooleanValue("success"))
-			{
-				setResult(RESULT_OK, null);
-				finish();
-			}
+			if (code == 200)
+				Toast.makeText(RegisterActivity.this, data, Toast.LENGTH_SHORT).show();
+			else
+				super.onUnsuccess(code, data);
 		}
 	};
 }

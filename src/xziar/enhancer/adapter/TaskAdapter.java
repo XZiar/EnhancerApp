@@ -57,6 +57,6 @@ public class TaskAdapter extends CommonAdapter<TaskBean, TaskAdapter.TaskHolder>
 	@Override
 	public int compare(TaskBean lhs, TaskBean rhs)
 	{
-		return (int) (lhs.getTime_start() - rhs.getTime_start());
+		return (int) -(lhs.getTime_start() - rhs.getTime_start());// desc
 	}
 }

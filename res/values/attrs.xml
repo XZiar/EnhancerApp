@@ -1,10 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <declare-styleable name="FloatLabelLayout">
+        <attr name="android:label" />
+    </declare-styleable>
     <declare-styleable name="NumberBox">
         <attr name="android:label" />
         <attr name="android:text" />
         <attr name="android:textSize" />
+    </declare-styleable>
+    <declare-styleable name="ActionBar">
+        <attr name="android:title" />
+        <attr name="android:subtitle" />
+        <attr name="android:textColor" />
+        <attr name="android:elevation" />
+        <attr name="tintColor" format="color" />
+        <attr name="gravityTitle">
+            <enum name="center" value="0" />
+            <enum name="left" value="1" />
+            <enum name="right" value="2" />
+        </attr>
+        <attr name="gravitySubtitle">
+            <enum name="center" value="0" />
+            <enum name="left" value="1" />
+            <enum name="right" value="2" />
+        </attr>
     </declare-styleable>
 
 </resources>

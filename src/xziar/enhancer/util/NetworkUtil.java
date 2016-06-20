@@ -6,9 +6,13 @@ import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 
 import android.content.Context;
@@ -16,13 +20,17 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
+import okhttp3.OkHttpClient.Builder;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -38,8 +46,29 @@ public class NetworkUtil
 	private static final Proxy proxy;
 	public static HttpUrl baseUrl;
 
+	private static final CookieJar cookiejar = new CookieJar()
+	{
+		private final HashMap<String, List<Cookie>> cookieMap = new HashMap<>();
+
+		@Override
+		public void saveFromResponse(HttpUrl url, List<Cookie> cookies)
+		{
+			cookieMap.put(url.host(), cookies);
+			Log.d(LogTag, "new cookies from " + url.host() + "\n");
+			for (Cookie ck : cookies)
+				Log.d(LogTag, "\r " + ck.toString());
+		}
+
+		@Override
+		public List<Cookie> loadForRequest(HttpUrl url)
+		{
+			List<Cookie> cookies = cookieMap.get(url.host());
+			return cookies == null ? new ArrayList<Cookie>() : cookies;
+		}
+	};
 	static
 	{
+		Builder builder = new OkHttpClient.Builder().cookieJar(cookiejar);
 		context = MainActivity.getAppContext();
 		InputStream ins = context.getResources().openRawResource(R.raw.network);
 		JSONObject data = new JSONObject();
@@ -47,6 +76,7 @@ public class NetworkUtil
 		{
 			byte[] dat = new byte[ins.available()];
 			ins.read(dat, 0, ins.available());
+			ins.close();
 			data = JSON.parseObject(new String(dat, "UTF-8"));
 		}
 		catch (IOException e)
@@ -65,21 +95,13 @@ public class NetworkUtil
 			proxy = new Proxy(Proxy.Type.valueOf(JOproxy.getString("type")),
 					new InetSocketAddress(JOproxy.getString("host"), JOproxy.getIntValue("port")));
 			Log.d(LogTag, "proxy : " + proxy.toString());
-			client = new OkHttpClient.Builder().proxy(proxy).build();
+			builder.proxy(proxy);
 		}
 		else
 		{
 			proxy = null;
-			client = new OkHttpClient();
 		}
-	}
-
-	public static void Test(Callback callback)
-	{
-		RequestBody formBody = new FormBody.Builder().add("un", "student").add("pwd", "student")
-				.build();
-		Request request = new Request.Builder().url(baseUrl + "/login").post(formBody).build();
-		client.newCall(request).enqueue(callback);
+		client = builder.build();
 	}
 
 	public static class NetCBHandler<D> extends Handler
@@ -145,11 +167,44 @@ public class NetworkUtil
 
 		protected NetCBHandler<D> handler;
 		protected String url;
+		protected final boolean isSingleton;
+		protected boolean isRunning;
+		protected Object taskdata;
 
-		public NetTask(String addr)
+		public NetTask(String addr, boolean isSingleton)
 		{
 			handler = new NetCBHandler<D>(this);
 			url = baseUrl + addr;
+			this.isSingleton = isSingleton;
+		}
+
+		public NetTask(String addr)
+		{
+			this(addr, false);
+		}
+
+		/**
+		 * set essential data of the task (without thread-safe gerantee)
+		 * 
+		 * @param taskdata
+		 *            essential data of the task
+		 * @return
+		 * 		NetTask itself
+		 */
+		public final NetTask<D> withData(Object taskdata)
+		{
+			this.taskdata = taskdata;
+			return this;
+		}
+
+		/**
+		 * get essential data of the task
+		 * 
+		 * @return
+		 */
+		protected final Object getTaskdata()
+		{
+			return taskdata;
 		}
 
 		/**
@@ -163,7 +218,10 @@ public class NetworkUtil
 		public final void post(Map<String, ? extends Object> form, boolean isMultiPart)
 		{
 			if (!isMultiPart)
+			{
 				post(form);
+				return;
+			}
 			MultipartBody.Builder fbBuilder = new MultipartBody.Builder();
 			fbBuilder.setType(MultipartBody.FORM);
 			for (Map.Entry<String, ? extends Object> e : form.entrySet())
@@ -204,12 +262,34 @@ public class NetworkUtil
 			run(request);
 		}
 
+		/**
+		 * post action
+		 * 
+		 * @param args
+		 *            argments to form the form, expected an even number of
+		 *            argment
+		 * @throws IllegalArgumentException
+		 */
+		public final void post(Object... args) throws IllegalArgumentException
+		{
+			if (args.length % 2 != 0)
+				throw new IllegalArgumentException(
+						String.format("receive %d argment, expected an even number", args.length));
+			HashMap<String, Object> form = new HashMap<>();
+			for (int a = 0; a < args.length; a += 2)
+				form.put(args[a].toString(), args[a + 1]);
+			post(form);
+		}
+
 		public void get()
 		{
 		}
 
 		protected final void run(Request request)
 		{
+			if (isSingleton && isRunning)
+				return;
+			isRunning = true;
 			client.newCall(request).enqueue(this);
 			onStart();
 		}
@@ -229,6 +309,7 @@ public class NetworkUtil
 				msg.obj = e;
 			}
 			msg.sendToTarget();
+			isRunning = false;
 		}
 
 		@Override
@@ -252,8 +333,8 @@ public class NetworkUtil
 			}
 			catch (IOException e)
 			{
-				msg.obj = e;
 				msg.what = RetCode.Fail.ordinal();
+				msg.obj = e;
 			}
 			catch (ParseResultFailException e)
 			{
@@ -262,6 +343,7 @@ public class NetworkUtil
 				msg.obj = e.getMsg();
 			}
 			msg.sendToTarget();
+			isRunning = false;
 		};
 
 		/**
@@ -350,4 +432,55 @@ public class NetworkUtil
 		{
 		};
 	}
+
+	public static class NetBeanTask<D> extends NetTask<D>
+	{
+		private final Class<?> clz;
+		private final String datname;
+		private final boolean isArray;
+		protected Context context = MainActivity.getAppContext();
+
+		public NetBeanTask(String addr, String obj, Class<?> clz, boolean isArray)
+		{
+			super("/app" + addr, true);
+			this.clz = clz;
+			this.datname = obj;
+			this.isArray = isArray;
+		}
+
+		public final void init(Context context)
+		{
+			this.context = context;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		protected D parse(ResponseBody data) throws IOException, ParseResultFailException
+		{
+			try
+			{
+				JSONObject obj = JSON.parseObject(data.string());
+				if (obj.getBooleanValue("success"))
+				{
+					if (isArray)
+						return (D) JSON.parseArray(obj.getString(datname), clz);
+					else
+						return (D) JSON.parseObject(obj.getString(datname), clz);
+				}
+				else
+					throw new ParseResultFailException(obj.getString("msg"));
+			}
+			catch (JSONException e)
+			{
+				Log.w(LogTag, "error when parse response to json", e);
+				throw new ParseResultFailException("error syntax");
+			}
+		}
+
+		@Override
+		protected void onFail()
+		{
+			Toast.makeText(context, "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
+		}
+	};
 }

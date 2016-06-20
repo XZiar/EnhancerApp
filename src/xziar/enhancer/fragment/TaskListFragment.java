@@ -1,56 +1,47 @@
 package xziar.enhancer.fragment;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.List;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import xziar.enhancer.R;
+import xziar.enhancer.activity.MainActivity;
+import xziar.enhancer.activity.TaskViewActivity;
 import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.adapter.TaskAdapter;
 import xziar.enhancer.pojo.TaskBean;
+import xziar.enhancer.util.NetworkUtil.NetBeanTask;
+import xziar.enhancer.util.ViewInject;
+import xziar.enhancer.util.ViewInject.BindView;
+import xziar.enhancer.util.ViewInject.ObjView;
+import xziar.enhancer.widget.ActionBar;
 
-public class TaskListFragment extends Fragment implements OnItemClickListener<TaskBean>
+@ObjView("view")
+public class TaskListFragment extends Fragment
+		implements OnItemClickListener<TaskBean>, OnRefreshListener
 {
 	private View view;
-	private RecyclerView list;
+	private ActionBar actbar;
+	ArrayList<TaskBean> ds = new ArrayList<>();
 	private TaskAdapter adapter;
-	ArrayList<TaskBean> ds;
+	@BindView(R.id.listwrap)
+	private SwipeRefreshLayout listwrap;
+	@BindView(R.id.list)
+	private RecyclerView list;
 
-	private void initData()
+	private void refreshData()
 	{
-		ds = new ArrayList<>();
-		TaskBean task;
-		{
-			task = new TaskBean();
-			task.setTitle("aaaa");
-			task.setLauncher("company");
-			task.setApplycount(2);
-			task.setTime_start(new Date(116, 3, 1).getTime());
-			ds.add(task);
-		}
-		{
-			task = new TaskBean();
-			task.setTitle("bbbb");
-			task.setLauncher("company");
-			task.setApplycount(2);
-			task.setTime_start(new Date(116, 6, 11).getTime());
-			ds.add(task);
-		}
-		{
-			task = new TaskBean();
-			task.setTitle("cccccccc");
-			task.setLauncher("company0");
-			task.setApplycount(10);
-			task.setTime_start(new Date(116, 2, 17).getTime());
-			ds.add(task);
-		}
-		adapter.refresh(ds);
+		listTask.post("from", 0);
 	}
 
 	@Override
@@ -58,37 +49,72 @@ public class TaskListFragment extends Fragment implements OnItemClickListener<Ta
 			Bundle savedInstanceState)
 	{
 		view = inflater.inflate(R.layout.fragment_tasklist, container, false);
-		list = (RecyclerView) view.findViewById(R.id.list);
+		ViewInject.inject(this);
+		actbar = ((MainActivity) getActivity()).getActbar();
+		setHasOptionsMenu(true);
+		listwrap.setOnRefreshListener(this);
 		adapter = new TaskAdapter(getActivity());
 		adapter.setItemClick(this);
 		list.setAdapter(adapter);
-
-		initData();
+		listTask.init(getActivity());
+		refreshData();
 		return view;
+	}
+	
+	@Override
+	public void onHiddenChanged(boolean hidden)
+	{
+		if (!hidden)
+			actbar.setMenu(R.menu.menu_view);
+		super.onHiddenChanged(hidden);
 	}
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState)
+	public boolean onOptionsItemSelected(MenuItem item)
 	{
-		super.onActivityCreated(savedInstanceState);
-
+		switch (item.getItemId())
+		{
+		case R.id.action_add:
+			Toast.makeText(getActivity(), "touch add in tasklist", Toast.LENGTH_SHORT).show();
+			break;
+		case R.id.action_top:
+			list.smoothScrollToPosition(0);
+			break;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+		return true;
 	}
 
 	@Override
 	public void OnClick(TaskBean data)
 	{
-		Toast.makeText(getActivity(), data.getTitle(), Toast.LENGTH_SHORT).show();
+		Intent it = new Intent(getActivity(), TaskViewActivity.class);
+		it.putExtra("tid", data.getTid());
+		startActivityForResult(it, 1442);
+	}
 
+	@Override
+	public void onRefresh()
+	{
+		refreshData();
+	}
+
+	private NetBeanTask<List<TaskBean>> listTask = new NetBeanTask<List<TaskBean>>(
+			"/task", "tasks", TaskBean.class, true)
+	{
+		@Override
+		protected void onDone()
 		{
-			TaskBean task = new TaskBean();
-			task.setTitle(System.currentTimeMillis() + "");
-			task.setLauncher("company");
-			task.setApplycount(2);
-			task.setTime_start(new Date(116, 3, 1).getTime());
+			listwrap.setRefreshing(false);
+		}
 
-			ds.add(task);
+		@Override
+		protected void onSuccess(List<TaskBean> data)
+		{
+			ds = new ArrayList<>(data);
 			adapter.refresh(ds);
 		}
-	}
+	};
 
 }

@@ -1,7 +1,6 @@
 package xziar.enhancer.activity;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -61,10 +60,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 	{
 		if (v == btn_login)
 		{
-			HashMap<String, String> data = new HashMap<>();
-			data.put("un", un.getText().toString());
-			data.put("pwd", pwd.getText().toString());
-			loginTask.post(data);
+			loginTask.post("un", un.getText(), "pwd", pwd.getText());
 		}
 		else if (v == txt_reg)
 		{
@@ -75,7 +71,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 			Toast.makeText(this, v.getClass().getName(), Toast.LENGTH_SHORT).show();
 	}
 
-	private NetTask<UserBean> loginTask = new NetTask<UserBean>("/app/login")
+	private NetTask<UserBean> loginTask = new NetTask<UserBean>("/app/login", true)
 	{
 		@Override
 		protected UserBean parse(ResponseBody data) throws IOException, ParseResultFailException

@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
-        android:hint="性别" >
+        android:label="性别" >
 
         <RadioGroup
             android:id="@+id/sgender"
@@ -89,7 +89,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
-        android:hint="入学时间" >
+        android:label="入学时间" >
 
         <LinearLayout
             android:layout_width="wrap_content"
