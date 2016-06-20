@@ -19,7 +19,9 @@ public class ViewInject
 	@Retention(RetentionPolicy.RUNTIME)
 	public static @interface BindView
 	{
-		public int value();
+		public int value() default 0;
+
+		public String onClick() default "";
 	}
 
 	@Inherited
@@ -27,7 +29,9 @@ public class ViewInject
 	@Retention(RetentionPolicy.RUNTIME)
 	public static @interface ObjView
 	{
-		public String value();
+		public String value() default "";
+
+		public String resource() default "";
 	}
 
 	private static long elapse = 0;
@@ -48,32 +52,48 @@ public class ViewInject
 		return meth;
 	}
 
+	private static void loadHolder(Class<?> clz) throws NoSuchFieldException
+	{
+		ObjView ov = clz.getAnnotation(ObjView.class);
+		if (ov == null)
+			return;
+		String holderName = ov.value();
+		if (holderName == "")// default value
+			return;
+		Field holder;
+		Log.d(LogTag, "load holder: " + ov.value());
+		try
+		{
+			holder = clz.getDeclaredField(ov.value());
+			holder.setAccessible(true);
+		}
+		catch (NoSuchFieldException e)
+		{
+			Log.w(LogTag, "ObjView not in this class");
+			holder = clz.getField(ov.value());
+		}
+		HolderMap.put(clz, holder);
+		return;
+	}
+
 	private static HashMap<Field, Integer> loadField(Class<?> clz)
 			throws NoSuchMethodException, NoSuchFieldException
 	{
 		HashMap<Field, Integer> ret = InjectMap.get(clz);
 		if (ret != null)
 			return ret;
+		// load holder
+		try
+		{
+			loadHolder(clz);
+		}
+		catch (NoSuchFieldException e)
+		{
+			Log.e(LogTag, "error when load holder for " + clz.getName(), e);
+		}
 		// load field
 		Log.d(LogTag, "load field: " + clz.getName());
 		ret = new HashMap<>();
-		ObjView iv = clz.getAnnotation(ObjView.class);
-		if (iv != null)
-		{
-			Log.d(LogTag, "load holder: " + iv.value());
-			Field f = null;
-			try
-			{
-				f = clz.getDeclaredField(iv.value());
-				f.setAccessible(true);
-			}
-			catch (NoSuchFieldException e)
-			{
-				Log.w(LogTag, "ObjView not in this class");
-				f = clz.getField(iv.value());
-			}
-			HolderMap.put(clz, f);
-		}
 
 		Field[] fields = clz.getDeclaredFields();
 		for (Field f : fields)
@@ -82,7 +102,9 @@ public class ViewInject
 			if (b != null)
 			{
 				f.setAccessible(true);
-				ret.put(f, b.value());
+				int val = b.value();
+				if (val != 0)
+					ret.put(f, val);
 			}
 		}
 		InjectMap.put(clz, ret);
@@ -97,10 +119,10 @@ public class ViewInject
 		try
 		{
 			HashMap<Field, Integer> injects = loadField(clz);
-			Field f = HolderMap.get(clz);
+			Field holder = HolderMap.get(clz);
 			try
 			{
-				Object viewHolder = (f == null ? obj : f.get(obj));
+				Object viewHolder = (holder == null ? obj : holder.get(obj));
 				Class<?> holderClz = viewHolder.getClass();
 				try
 				{

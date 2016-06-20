@@ -13,8 +13,9 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import xziar.enhancer.R;
+import xziar.enhancer.activity.AddPostActivity;
+import xziar.enhancer.activity.LoginActivity;
 import xziar.enhancer.activity.MainActivity;
 import xziar.enhancer.activity.PostViewActivity;
 import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
@@ -39,6 +40,11 @@ public class ForumFragment extends Fragment
 	@BindView(R.id.list)
 	private RecyclerView list;
 
+	private static enum reqCode
+	{
+		login, addpost
+	}
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState)
@@ -56,7 +62,6 @@ public class ForumFragment extends Fragment
 		return view;
 	}
 
-
 	@Override
 	public void onHiddenChanged(boolean hidden)
 	{
@@ -65,19 +70,40 @@ public class ForumFragment extends Fragment
 		super.onHiddenChanged(hidden);
 	}
 
-
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
 		switch (item.getItemId())
 		{
 		case R.id.action_add:
-			Toast.makeText(getActivity(), "touch add in forum", Toast.LENGTH_SHORT).show();
+			if (MainActivity.user != null)
+			{
+				Intent it = new Intent(getActivity(), AddPostActivity.class);
+				startActivityForResult(it, reqCode.addpost.ordinal());
+			}
+			else
+			{
+				Intent it = new Intent(getActivity(), LoginActivity.class);
+				startActivityForResult(it, reqCode.login.ordinal());
+			}
 			break;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 		return true;
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		if (data != null)
+		{
+			if (data.getBooleanExtra("forum_changed", false))
+			{
+				refreshData();
+			}
+		}
+		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	private void refreshData()
@@ -99,8 +125,8 @@ public class ForumFragment extends Fragment
 		refreshData();
 	}
 
-	private NetBeanTask<List<PostBean>> listTask = new NetBeanTask<List<PostBean>>(
-			"/forum", "posts", PostBean.class, true)
+	private NetBeanTask<List<PostBean>> listTask = new NetBeanTask<List<PostBean>>("/forum",
+			"posts", PostBean.class, true)
 	{
 		@Override
 		protected void onDone()

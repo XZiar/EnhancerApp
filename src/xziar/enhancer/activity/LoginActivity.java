@@ -119,7 +119,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 		{
 			Toast.makeText(LoginActivity.this, data.getName(), Toast.LENGTH_SHORT).show();
 			MainActivity.user = data;
-			setResult(RESULT_OK, new Intent().putExtra("changed", true));
+			setResult(RESULT_OK, new Intent().putExtra("user_changed", true));
 			finish();
 		}
 

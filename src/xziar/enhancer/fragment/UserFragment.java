@@ -112,7 +112,7 @@ public class UserFragment extends Fragment
 	{
 		if (data != null)
 		{
-			if (data.getBooleanExtra("changed", false))
+			if (data.getBooleanExtra("user_changed", false))
 			{
 				refreshData();
 			}
