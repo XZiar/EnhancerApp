@@ -52,7 +52,7 @@
                 <xziar.enhancer.widget.RichTextEditor
                     android:id="@+id/editor"
                     android:layout_width="match_parent"
-                    android:layout_height="200dp" />
+                    android:layout_height="wrap_content" />
             </android.support.v7.widget.CardView>
 
             <android.support.v7.widget.AppCompatButton

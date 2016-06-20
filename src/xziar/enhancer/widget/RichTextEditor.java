@@ -2,12 +2,15 @@ package xziar.enhancer.widget;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.text.Html;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import jp.wasabeef.richeditor.RichEditor;
 import xziar.enhancer.R;
 import xziar.enhancer.util.ViewInject;
@@ -15,10 +18,13 @@ import xziar.enhancer.util.ViewInject.BindView;
 
 public class RichTextEditor extends LinearLayout implements OnClickListener
 {
-	private Context context;
-	private boolean isTxtColor = false, isBgColor = false;
+	private boolean isEdit = true, isTxtColor = false, isBgColor = false;
+	@BindView()
+	private HorizontalScrollView tool;
 	@BindView()
 	private RichEditor reditor;
+	@BindView()
+	private TextView preview;
 	@BindView(onClick = "this")
 	private ImageButton action_undo, action_redo, action_bold, action_italic, action_subscript,
 			action_superscript, action_strikethrough, action_underline, action_heading1,
@@ -30,10 +36,14 @@ public class RichTextEditor extends LinearLayout implements OnClickListener
 	public RichTextEditor(Context context, AttributeSet attrs, int defStyleAttr)
 	{
 		super(context, attrs, defStyleAttr);
-		this.context = context;
 		setOrientation(LinearLayout.VERTICAL);
 		LayoutInflater.from(context).inflate(R.layout.layout_rich_text_editor, this, true);
 		ViewInject.inject(this);
+		preview.setVisibility(View.GONE);
+
+		reditor.setEditorFontSize(16);
+		reditor.setEditorFontColor(Color.BLACK);
+		reditor.setPadding(10, 10, 10, 10);
 	}
 
 	public RichTextEditor(Context context, AttributeSet attrs)
@@ -46,9 +56,43 @@ public class RichTextEditor extends LinearLayout implements OnClickListener
 		this(context, null);
 	}
 
+	public void chgMode()
+	{
+		setMode(!isEdit);
+	}
+
+	public void setMode(boolean isEdit)
+	{
+		if (this.isEdit != isEdit)
+		{
+			if (this.isEdit = isEdit)
+			{
+				preview.setVisibility(View.GONE);
+				tool.setVisibility(View.VISIBLE);
+				reditor.setVisibility(View.VISIBLE);
+			}
+			else
+			{
+				preview.setVisibility(View.VISIBLE);
+				String content = reditor.getHtml();
+				if (content != null)
+					preview.setText(Html.fromHtml(content));
+				else
+					preview.setTag("");
+				tool.setVisibility(View.GONE);
+				reditor.setVisibility(View.GONE);
+			}
+		}
+	}
+
 	public RichEditor getEditor()
 	{
 		return reditor;
+	}
+
+	public String getContent()
+	{
+		return reditor.getHtml();
 	}
 
 	@Override
@@ -109,6 +153,5 @@ public class RichTextEditor extends LinearLayout implements OnClickListener
 					"dachshund");
 		else if (v == action_insert_link)
 			reditor.insertLink("https://github.com/wasabeef", "wasabeef");
-
 	}
 }
