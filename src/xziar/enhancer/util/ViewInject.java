@@ -8,10 +8,13 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
+import android.content.res.Resources;
 import android.util.Log;
+import android.view.View.OnClickListener;
+import xziar.enhancer.activity.MainActivity;
 
 public class ViewInject
 {
@@ -19,7 +22,9 @@ public class ViewInject
 	@Retention(RetentionPolicy.RUNTIME)
 	public static @interface BindView
 	{
-		public int value() default 0;
+		public int value()
+
+		default 0;
 
 		public String onClick() default "";
 	}
@@ -30,36 +35,93 @@ public class ViewInject
 	public static @interface ObjView
 	{
 		public String value() default "";
+	}
 
-		public String resource() default "";
+	private static class InjectData
+	{
+		static class Element
+		{
+			static enum BindState
+			{
+				none, self, other
+			}
+
+			final Field obj;
+			final int id;
+			BindState bindClick = BindState.none;
+			Method setOnClick;
+
+			public Element(Field obj, int id)
+			{
+				this.obj = obj;
+				this.id = id;
+			}
+		}
+
+		Field holder = null;
+		ArrayList<Element> datas = new ArrayList<>();
 	}
 
 	private static long elapse = 0;
 	private static final String LogTag = "ViewInject";
-	private static HashMap<Class<?>, Field> HolderMap = new HashMap<>();
-	private static HashMap<Class<?>, Method> MethodMap = new HashMap<>();
-	private static HashMap<Class<?>, HashMap<Field, Integer>> InjectMap = new HashMap<>();
+	private static final Resources res;
+	private static final String pkgName;
+	private static HashMap<Class<?>, Method> MethodMapFindView = new HashMap<>();
+	private static HashMap<Class<?>, Method> MethodMapSetOnClick = new HashMap<>();
+	private static HashMap<Class<?>, InjectData> InjectMap = new HashMap<>();
 
-	private static Method loadMeth(Class<?> clz) throws NoSuchMethodException
+	static
 	{
-		Method meth = MethodMap.get(clz);
+		res = MainActivity.getAppContext().getResources();
+		pkgName = MainActivity.getAppContext().getPackageName();
+	}
+
+	private static Method loadMethFindView(Class<?> clz)
+	{
+		Method meth = MethodMapFindView.get(clz);
 		if (meth != null)
 			return meth;
 		// load method
-		Log.d(LogTag, "load method: " + clz.getName());
-		meth = clz.getMethod("findViewById", int.class);
-		MethodMap.put(clz, meth);
+		Log.d(LogTag, "load method of findViewById: " + clz.getName());
+		try
+		{
+			meth = clz.getMethod("findViewById", int.class);
+			MethodMapFindView.put(clz, meth);
+		}
+		catch (NoSuchMethodException e)
+		{
+			Log.e(LogTag, "error when load method of findViewById: " + clz.getName(), e);
+		}
 		return meth;
 	}
 
-	private static void loadHolder(Class<?> clz) throws NoSuchFieldException
+	private static Method loadMethSetOnClick(Class<?> clz)
+	{
+		Method meth = MethodMapSetOnClick.get(clz);
+		if (meth != null)
+			return meth;
+		// load method
+		Log.d(LogTag, "load method of setOnClickListener: " + clz.getName());
+		try
+		{
+			meth = clz.getMethod("setOnClickListener", OnClickListener.class);
+			MethodMapSetOnClick.put(clz, meth);
+		}
+		catch (NoSuchMethodException e)
+		{
+			Log.e(LogTag, "error when load method of setOnClickListener: " + clz.getName(), e);
+		}
+		return meth;
+	}
+
+	private static Field loadHolder(Class<?> clz) throws NoSuchFieldException
 	{
 		ObjView ov = clz.getAnnotation(ObjView.class);
 		if (ov == null)
-			return;
+			return null;
 		String holderName = ov.value();
 		if (holderName == "")// default value
-			return;
+			return null;
 		Field holder;
 		Log.d(LogTag, "load holder: " + ov.value());
 		try
@@ -72,20 +134,20 @@ public class ViewInject
 			Log.w(LogTag, "ObjView not in this class");
 			holder = clz.getField(ov.value());
 		}
-		HolderMap.put(clz, holder);
-		return;
+		return holder;
 	}
 
-	private static HashMap<Field, Integer> loadField(Class<?> clz)
+	private static InjectData loadInjectData(Class<?> clz)
 			throws NoSuchMethodException, NoSuchFieldException
 	{
-		HashMap<Field, Integer> ret = InjectMap.get(clz);
+		InjectData ret = InjectMap.get(clz);
 		if (ret != null)
 			return ret;
 		// load holder
+		ret = new InjectData();
 		try
 		{
-			loadHolder(clz);
+			ret.holder = loadHolder(clz);
 		}
 		catch (NoSuchFieldException e)
 		{
@@ -93,7 +155,6 @@ public class ViewInject
 		}
 		// load field
 		Log.d(LogTag, "load field: " + clz.getName());
-		ret = new HashMap<>();
 
 		Field[] fields = clz.getDeclaredFields();
 		for (Field f : fields)
@@ -103,8 +164,21 @@ public class ViewInject
 			{
 				f.setAccessible(true);
 				int val = b.value();
+				if (val == 0)
+					val = res.getIdentifier(f.getName(), "id", pkgName);
 				if (val != 0)
-					ret.put(f, val);
+				{
+					InjectData.Element ele = new InjectData.Element(f, val);
+					if (b.onClick() != "")
+					{
+						ele.bindClick = b.onClick() == "this" ? InjectData.Element.BindState.self
+								: InjectData.Element.BindState.other;
+						ele.setOnClick = loadMethSetOnClick(f.getType());
+					}
+					ret.datas.add(ele);
+				}
+				else
+					Log.e(LogTag, "canot get R.id for " + f.getName() + " in " + clz.getName());
 			}
 		}
 		InjectMap.put(clz, ret);
@@ -118,40 +192,45 @@ public class ViewInject
 		Class<?> clz = obj.getClass();
 		try
 		{
-			HashMap<Field, Integer> injects = loadField(clz);
-			Field holder = HolderMap.get(clz);
+			InjectData injDat = loadInjectData(clz);
 			try
 			{
-				Object viewHolder = (holder == null ? obj : holder.get(obj));
+				Object viewHolder = (injDat.holder == null ? obj : injDat.holder.get(obj));
 				Class<?> holderClz = viewHolder.getClass();
-				try
+				Method meth = loadMethFindView(holderClz);
+				for (InjectData.Element inj : injDat.datas)
 				{
-					Method meth = loadMeth(holderClz);
-					for (Map.Entry<Field, Integer> inj : injects.entrySet())
+					try
 					{
+						Object view = meth.invoke(viewHolder, inj.id);
 						try
 						{
-							Object view = meth.invoke(viewHolder, inj.getValue());
+							inj.obj.set(obj, view);
+						}
+						catch (IllegalAccessException | IllegalArgumentException e)
+						{
+							Log.e(LogTag,
+									"error when do inject\n" + inj.obj.getName() + " <== " + view,
+									e);
+						}
+						if (inj.bindClick == InjectData.Element.BindState.self)
+						{
 							try
 							{
-								inj.getKey().set(obj, view);
+								inj.setOnClick.invoke(view, obj);
 							}
 							catch (IllegalAccessException | IllegalArgumentException e)
 							{
-								Log.e(LogTag, "error when do inject\n" + inj.getKey().getName()
-										+ " <== " + view, e);
+								Log.e(LogTag, "error when do setonclick\n" + obj + " ==> " + view,
+										e);
 							}
 						}
-						catch (InvocationTargetException e)
-						{
-							Log.e(LogTag, "error when findViewById on " + viewHolder + " ==> "
-									+ inj.getValue(), e);
-						}
 					}
-				}
-				catch (NoSuchMethodException e)
-				{
-					Log.e(LogTag, "error when loadmeth: " + holderClz.getName(), e);
+					catch (InvocationTargetException e)
+					{
+						Log.e(LogTag, "error when findViewById on " + viewHolder + " ==> " + inj.id,
+								e);
+					}
 				}
 			}
 			catch (IllegalAccessException | IllegalArgumentException e)
