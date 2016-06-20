@@ -3,7 +3,9 @@ package xziar.enhancer.activity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 import xziar.enhancer.R;
 import xziar.enhancer.pojo.PostBean;
 import xziar.enhancer.util.NetworkUtil.NetBeanTask;
@@ -29,10 +31,29 @@ public class PostViewActivity extends AppCompatActivity
 		actbar.setSubtitle("·¢ÆðÈË");
 
 		actbar.setupActionBar(this);
+		actbar.setMenu(R.menu.menu_view);
 		actbar.setBackButton(true);
 		viewTask.init(this);
 		int pid = getIntent().getIntExtra("pid", -1);
 		viewTask.post("pid", pid);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		switch (item.getItemId())
+		{
+		case 0x102002c:
+		case R.id.action_back:
+			finish();
+			break;
+		case R.id.action_add:
+			Toast.makeText(this, "press add", Toast.LENGTH_SHORT).show();
+			break;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+		return true;
 	}
 
 	private NetBeanTask<PostBean> viewTask = new NetBeanTask<PostBean>("/postview", "post",

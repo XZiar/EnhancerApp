@@ -20,5 +20,6 @@
         <item name="android:textColorPrimary">@color/iron</item>
         <item name="android:background">@android:color/transparent</item>
     </style>
-
+    <style name="AppTheme.ActionButton" parent="Widget.AppCompat.ActionButton"/>
+    
 </resources>

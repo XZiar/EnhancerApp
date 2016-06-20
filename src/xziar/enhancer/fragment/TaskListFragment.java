@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import xziar.enhancer.R;
+import xziar.enhancer.activity.MainActivity;
 import xziar.enhancer.activity.TaskViewActivity;
 import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.adapter.TaskAdapter;
@@ -21,12 +22,14 @@ import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.util.ViewInject.ObjView;
+import xziar.enhancer.widget.ActionBar;
 
 @ObjView("view")
 public class TaskListFragment extends Fragment
 		implements OnItemClickListener<TaskBean>, OnRefreshListener
 {
 	private View view;
+	private ActionBar actbar;
 	ArrayList<TaskBean> ds = new ArrayList<>();
 	private TaskAdapter adapter;
 	@BindView(R.id.listwrap)
@@ -45,6 +48,8 @@ public class TaskListFragment extends Fragment
 	{
 		view = inflater.inflate(R.layout.fragment_tasklist, container, false);
 		ViewInject.inject(this);
+		actbar = ((MainActivity) getActivity()).getActbar();
+		setHasOptionsMenu(true);
 		listwrap.setOnRefreshListener(this);
 		adapter = new TaskAdapter(getActivity());
 		adapter.setItemClick(this);
@@ -54,6 +59,14 @@ public class TaskListFragment extends Fragment
 		return view;
 	}
 	
+	@Override
+	public void onHiddenChanged(boolean hidden)
+	{
+		if (!hidden)
+			actbar.setMenu(R.menu.menu_view);
+		super.onHiddenChanged(hidden);
+	}
+
 	@Override
 	public void OnClick(TaskBean data)
 	{

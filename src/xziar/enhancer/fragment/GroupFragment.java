@@ -10,14 +10,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import xziar.enhancer.R;
+import xziar.enhancer.activity.MainActivity;
 import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.adapter.GroupAdapter;
 import xziar.enhancer.pojo.AccountBean;
 import xziar.enhancer.pojo.GroupBean;
+import xziar.enhancer.widget.ActionBar;
 
 public class GroupFragment extends Fragment implements OnItemClickListener<GroupBean>
 {
 	private View view;
+	private ActionBar actbar;
 	private RecyclerView list;
 	private GroupAdapter adapter;
 	private ArrayList<GroupBean> groups;
@@ -28,6 +31,8 @@ public class GroupFragment extends Fragment implements OnItemClickListener<Group
 	{
 		view = inflater.inflate(R.layout.fragment_group, container, false);
 		list = (RecyclerView) view.findViewById(R.id.list);
+		actbar = ((MainActivity) getActivity()).getActbar();
+		setHasOptionsMenu(true);
 		adapter = new GroupAdapter(getActivity());
 		adapter.setItemClick(this);
 		list.setAdapter(adapter);
@@ -64,9 +69,11 @@ public class GroupFragment extends Fragment implements OnItemClickListener<Group
 	}
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState)
+	public void onHiddenChanged(boolean hidden)
 	{
-		super.onActivityCreated(savedInstanceState);
+		if (!hidden)
+			actbar.setMenu(R.menu.menu_view);
+		super.onHiddenChanged(hidden);
 	}
 
 	@Override

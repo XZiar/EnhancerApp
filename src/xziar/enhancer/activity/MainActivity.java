@@ -6,6 +6,7 @@ import com.roughike.bottombar.OnMenuTabClickListener;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import xziar.enhancer.R;
 import xziar.enhancer.fragment.ForumFragment;
 import xziar.enhancer.fragment.GroupFragment;
@@ -29,7 +30,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 	private ActionBar actbar;
 
 	private static Context appcontext;
-
 	public static UserBean user;
 
 	private void initWidget()
@@ -61,8 +61,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 		setContentView(R.layout.activity_main);
 		ViewInject.inject(this);
 
-		actbar.setTitle("biaoti-xxxxx");
-		actbar.setSubtitle("subtitle");
 		actbar.setupActionBar(this);
 
 		bottombar = BottomBar.attach(this, savedInstanceState);
@@ -96,9 +94,20 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 		// TODO Auto-generated method stub
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		return fragMan.getCurFrag().onOptionsItemSelected(item);
+	}
+
 	public static Context getAppContext()
 	{
 		return appcontext;
+	}
+
+	public ActionBar getActbar()
+	{
+		return actbar;
 	}
 
 	public void setTitle(String title)

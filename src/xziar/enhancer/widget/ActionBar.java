@@ -1,28 +1,56 @@
 package xziar.enhancer.widget;
 
+import java.lang.ref.SoftReference;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.menu.ActionMenuItem;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ImageButton;
+import android.widget.ImageView.ScaleType;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import xziar.enhancer.R;
+import xziar.enhancer.util.SimpleImageUtil;
 import xziar.enhancer.util.SizeUtil;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 
-public class ActionBar extends AppBarLayout
+public class ActionBar extends AppBarLayout implements OnClickListener
 {
 	private static final String LogTag = "ActionBar";
-	android.support.v7.app.ActionBar supportActBar;
+	private static final int imgPad;
+	private SoftReference<AppCompatActivity> ref;
+	private Context context;
+	private MenuInflater menuInf;
+	private int tintColor;
+	private ArrayList<View> padLeft = new ArrayList<>(), padRight = new ArrayList<>();
+	private HashMap<View, MenuItem> btnMap = new HashMap<>();
+	@BindView(R.id.leftBar)
+	private LinearLayout leftBar;
+	@BindView(R.id.midBar)
+	private LinearLayout midBar;
+	@BindView(R.id.rightBar)
+	private LinearLayout rightBar;
 	@BindView(R.id.toolbar)
 	private Toolbar toolbar;
 	@BindView(R.id.title)
@@ -31,6 +59,11 @@ public class ActionBar extends AppBarLayout
 	private TextView tvSubtitle;
 	@BindView(R.id.shadow)
 	private View shadow;
+
+	static
+	{
+		imgPad = SizeUtil.dp2px(12);
+	}
 
 	private int transGravity(int val)
 	{
@@ -49,6 +82,7 @@ public class ActionBar extends AppBarLayout
 	public ActionBar(Context context, AttributeSet attrs, int defStyleAttr)
 	{
 		super(context, attrs);
+		this.context = context;
 		LayoutInflater.from(context).inflate(R.layout.layout_actionbar, this, true);
 		ViewInject.inject(this);
 		toolbar.setContentInsetsAbsolute(0, 0);
@@ -61,6 +95,8 @@ public class ActionBar extends AppBarLayout
 		tvSubtitle.setGravity(transGravity(ta.getInt(R.styleable.ActionBar_gravitySubtitle, 0)));
 		int color = ta.getColor(R.styleable.ActionBar_android_textColor,
 				ContextCompat.getColor(context, android.R.color.black));
+		tintColor = ta.getColor(R.styleable.ActionBar_tintColor,
+				ContextCompat.getColor(context, R.color.colorAccent));
 		tvTitle.setTextColor(color);
 		tvSubtitle.setTextColor(color);
 		setTitle(ta.getText(R.styleable.ActionBar_android_title));
@@ -110,19 +146,163 @@ public class ActionBar extends AppBarLayout
 	{
 	}
 
+	private ImageButton genButton()
+	{
+		ImageButton btn = new ImageButton(context, null, R.style.Widget_AppCompat_ActionButton);
+		btn.setPadding(imgPad, 0, imgPad, 0);
+		btn.setScaleType(ScaleType.FIT_CENTER);
+		return btn;
+	}
+
+	protected View genButton(int resId)
+	{
+		return genButton(ContextCompat.getDrawable(context, resId));
+	}
+
+	protected View genButton(Drawable icon)
+	{
+		ImageButton btn = genButton();
+		btn.setImageDrawable(SimpleImageUtil.tintDrawable(icon, tintColor));
+		return btn;
+	}
+
+	public void addMenu(int menuId, int resId, boolean isLeft)
+	{
+		View btn = genButton(resId);
+		MenuItem item = new ActionMenuItem(context, isLeft ? R.id.leftMenu : R.id.rightMenu, menuId,
+				100, 0, "");
+		addButton(item, btn, isLeft);
+	}
+
+	public boolean delMenu(int resId)
+	{
+		for (Map.Entry<View, MenuItem> e : btnMap.entrySet())
+		{
+			if (e.getValue().getItemId() == resId)
+			{
+				removeButton(e.getKey(), e.getValue().getGroupId() == R.id.leftMenu);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void removeAllMenu()
+	{
+		// remove all exist menu
+		leftBar.removeAllViews();
+		rightBar.removeAllViews();
+		padLeft.clear();
+		padRight.clear();
+		btnMap.clear();
+	}
+
+	protected void removeButton(View v, boolean isLeft)
+	{
+		ArrayList<View> padObj, padOther;
+		LinearLayout barObj, barOther;
+		btnMap.remove(v);
+		if (isLeft)
+		{
+			padObj = padLeft;
+			padOther = padRight;
+			barObj = leftBar;
+			barOther = rightBar;
+		}
+		else
+		{
+			padObj = padRight;
+			padOther = padLeft;
+			barObj = rightBar;
+			barOther = leftBar;
+		}
+		if (padObj.size() < padOther.size())
+		{
+			// remove other padding
+			barOther.removeView(padOther.get(0));
+			padOther.remove(0);
+			barObj.removeView(v);
+		}
+		else
+		{
+			// add object padding
+			View padView = genButton(R.drawable.icon_add);
+			padObj.add(padView);
+			barObj.addView(padView, -1);
+			padView.setVisibility(View.INVISIBLE);
+		}
+	}
+
+	public void setMenu(int resId)
+	{
+		PopupMenu pm = new PopupMenu(context, null);
+		Menu menu = pm.getMenu();
+		menuInf.inflate(resId, menu);
+
+		removeAllMenu();
+
+		// add button
+		for (int a = 0; a < menu.size(); a++)
+		{
+			MenuItem item = menu.getItem(a);
+			boolean isLeft = (item.getGroupId() == R.id.leftMenu);
+			View btn = genButton(item.getIcon());
+			addButton(item, btn, isLeft);
+		}
+
+	}
+
+	protected void addButton(MenuItem item, View button, boolean isLeft)
+	{
+		button.setOnClickListener(this);
+		btnMap.put(button, item);
+		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
+				LayoutParams.WRAP_CONTENT);
+		lp.gravity = Gravity.CENTER;
+		ArrayList<View> padObj, padOther;
+		LinearLayout barObj, barOther;
+		if (isLeft)
+		{
+			padObj = padLeft;
+			padOther = padRight;
+			barObj = leftBar;
+			barOther = rightBar;
+		}
+		else
+		{
+			padObj = padRight;
+			padOther = padLeft;
+			barObj = rightBar;
+			barOther = leftBar;
+		}
+		if (padObj.size() > padOther.size())
+		{
+			// replace object padding
+			barObj.removeView(padObj.get(0));
+			padObj.remove(0);
+			barObj.addView(button, barObj.getChildCount() - padObj.size(), lp);
+		}
+		else
+		{
+			// add other padding
+			View padView = genButton(R.drawable.icon_add);
+			padOther.add(padView);
+			barOther.addView(padView, -1);
+			padView.setVisibility(View.INVISIBLE);
+			barObj.addView(button, -1, lp);
+		}
+	}
+
 	public void setupActionBar(AppCompatActivity activity)
 	{
-		activity.setSupportActionBar(toolbar);
-		supportActBar = activity.getSupportActionBar();
+		this.ref = new SoftReference<AppCompatActivity>(activity);
+		menuInf = activity.getMenuInflater();
 	}
 
 	public void setBackButton(boolean isEnable)
 	{
-		if (supportActBar != null)
-		{
-			supportActBar.setDisplayHomeAsUpEnabled(isEnable);
-			toolbar.setContentInsetsAbsolute(0, 0);
-		}
+		if (isEnable)
+			addMenu(R.id.action_back, R.drawable.icon_back, true);
 	}
 
 	public void setSubtitle(CharSequence txt)
@@ -141,6 +321,17 @@ public class ActionBar extends AppBarLayout
 		else
 			tvTitle.setVisibility(View.VISIBLE);
 		tvTitle.setText(txt);
+	}
+
+	@Override
+	public void onClick(View v)
+	{
+		MenuItem item = btnMap.get(v);
+		Activity activity = ref.get();
+		if (item != null && activity != null)
+		{
+			activity.onOptionsItemSelected(item);
+		}
 	}
 
 }

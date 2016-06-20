@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -21,17 +22,18 @@ import xziar.enhancer.activity.LoginActivity;
 import xziar.enhancer.activity.MainActivity;
 import xziar.enhancer.pojo.AccountBean.Role;
 import xziar.enhancer.pojo.UserBean;
-import xziar.enhancer.util.CircleImageUtil;
 import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.NetworkUtil.NetTask;
+import xziar.enhancer.util.SimpleImageUtil;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.util.ViewInject.ObjView;
+import xziar.enhancer.widget.ActionBar;
 import xziar.enhancer.widget.NumberBox;
 
 @ObjView("view")
 public class UserFragment extends Fragment
-		implements OnClickListener, android.content.DialogInterface.OnClickListener
+		implements OnClickListener, DialogInterface.OnClickListener
 {
 	private static enum reqCode
 	{
@@ -39,6 +41,7 @@ public class UserFragment extends Fragment
 	}
 
 	private View view;
+	private ActionBar actbar;
 	private UserBean user;
 	private AlertDialog logoutDlg, chgpwdDlg, chgheadDlg;
 	private EditText oldpwd, newpwd;
@@ -87,6 +90,8 @@ public class UserFragment extends Fragment
 	{
 		view = inflater.inflate(R.layout.fragment_user, container, false);
 		ViewInject.inject(this);
+		actbar = ((MainActivity) getActivity()).getActbar();
+		setHasOptionsMenu(true);
 		headimg.setOnClickListener(this);
 		loginarea.setOnClickListener(this);
 		chgpwd.setOnClickListener(this);
@@ -118,9 +123,12 @@ public class UserFragment extends Fragment
 	@Override
 	public void onHiddenChanged(boolean hidden)
 	{
-		super.onHiddenChanged(hidden);
 		if (!hidden)
+		{
 			refreshData();
+		}
+
+		super.onHiddenChanged(hidden);
 	}
 
 	private void refreshData()
@@ -131,9 +139,12 @@ public class UserFragment extends Fragment
 
 	private void refreshView()
 	{
+		actbar.removeAllMenu();
+		actbar.setMenu(R.menu.menu_user);
 		if (user == null)
 		{
-			headimg.setImageDrawable(CircleImageUtil.getCircleDrawable(R.drawable.defaulthead));
+			actbar.delMenu(R.id.action_logout);
+			headimg.setImageDrawable(SimpleImageUtil.getCircleDrawable(R.drawable.defaulthead));
 			name.setText("Î´µÇÂ¼");
 			des.setText("");
 			score.setVal("*");
@@ -143,8 +154,9 @@ public class UserFragment extends Fragment
 		}
 		else
 		{
+			actbar.delMenu(R.id.action_login);
 			headimg.setImageDrawable(
-					CircleImageUtil.getCircleDrawable(user.getAccountRole() == Role.company
+					SimpleImageUtil.getCircleDrawable(user.getAccountRole() == Role.company
 							? R.drawable.companyhead : R.drawable.studenthead));
 			name.setText(user.getName());
 			des.setText(user.getDescribe());
@@ -153,6 +165,24 @@ public class UserFragment extends Fragment
 			task_ongoing.setVal(user.getTask_ongoing());
 			oparea.setVisibility(View.VISIBLE);
 		}
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		switch (item.getItemId())
+		{
+		case R.id.action_logout:
+			logoutDlg.show();
+			break;
+		case R.id.action_login:
+			Intent it = new Intent(getActivity(), LoginActivity.class);
+			startActivityForResult(it, reqCode.login.ordinal());
+			break;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+		return true;
 	}
 
 	@Override

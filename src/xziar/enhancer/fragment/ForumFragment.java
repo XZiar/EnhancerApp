@@ -10,9 +10,12 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 import xziar.enhancer.R;
+import xziar.enhancer.activity.MainActivity;
 import xziar.enhancer.activity.PostViewActivity;
 import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.adapter.PostAdapter;
@@ -21,12 +24,14 @@ import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.util.ViewInject.ObjView;
+import xziar.enhancer.widget.ActionBar;
 
 @ObjView("view")
 public class ForumFragment extends Fragment
 		implements OnItemClickListener<PostBean>, OnRefreshListener
 {
 	private View view;
+	private ActionBar actbar;
 	private PostAdapter adapter;
 	ArrayList<PostBean> ds = new ArrayList<>();
 	@BindView(R.id.listwrap)
@@ -40,6 +45,8 @@ public class ForumFragment extends Fragment
 	{
 		view = inflater.inflate(R.layout.fragment_forum, container, false);
 		ViewInject.inject(this);
+		actbar = ((MainActivity) getActivity()).getActbar();
+		setHasOptionsMenu(true);
 		listwrap.setOnRefreshListener(this);
 		adapter = new PostAdapter(getActivity());
 		adapter.setItemClick(this);
@@ -47,6 +54,30 @@ public class ForumFragment extends Fragment
 		listTask.init(getActivity());
 		refreshData();
 		return view;
+	}
+
+
+	@Override
+	public void onHiddenChanged(boolean hidden)
+	{
+		if (!hidden)
+			actbar.setMenu(R.menu.menu_view);
+		super.onHiddenChanged(hidden);
+	}
+
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		switch (item.getItemId())
+		{
+		case R.id.action_add:
+			Toast.makeText(getActivity(), "touch add in forum", Toast.LENGTH_SHORT).show();
+			break;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+		return true;
 	}
 
 	private void refreshData()

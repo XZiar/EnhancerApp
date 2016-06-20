@@ -28,8 +28,8 @@ public class AddTaskActivity extends AppCompatActivity
 		actbar.setTitle("话题");
 		actbar.setSubtitle("发起人");
 
-		actbar.setupActionBar(this);
-		actbar.setBackButton(true);
+		// actbar.setupActionBar(this);
+		// actbar.setBackButton(true);
 
 		viewTask.init(this);
 		int tid = getIntent().getIntExtra("tid", -1);

@@ -60,8 +60,7 @@ public class FragManager
 	public FragManager show(Fragment frag)
 	{
 		FragmentTransaction trans = getTrans();
-		if (fragMap.containsValue(frag))
-			trans.show(curFrag = frag);
+		trans.show(curFrag = frag);
 		return this;
 	}
 
@@ -76,7 +75,7 @@ public class FragManager
 	public FragManager change(Fragment frag)
 	{
 		FragmentTransaction trans = getTrans();
-		if (frag != curFrag && fragMap.containsValue(frag))
+		if (frag != curFrag)
 		{
 			if (curFrag != null)
 				trans.hide(curFrag);
