@@ -14,7 +14,6 @@ import java.util.HashMap;
 import android.content.res.Resources;
 import android.util.Log;
 import android.view.View.OnClickListener;
-import xziar.enhancer.activity.MainActivity;
 
 public class ViewInject
 {
@@ -72,8 +71,8 @@ public class ViewInject
 
 	static
 	{
-		res = MainActivity.getAppContext().getResources();
-		pkgName = MainActivity.getAppContext().getPackageName();
+		res = BaseApplication.getContext().getResources();
+		pkgName = BaseApplication.getContext().getPackageName();
 	}
 
 	private static Method loadMethFindView(Class<?> clz)

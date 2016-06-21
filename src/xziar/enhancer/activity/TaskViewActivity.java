@@ -32,7 +32,6 @@ public class TaskViewActivity extends AppCompatActivity
 		actbar.setSubtitle("·¢ÆðÈË");
 		actbar.setMenu(R.menu.menu_view);
 		actbar.setBackButton(true);
-		viewTask.init(this);
 		int tid = getIntent().getIntExtra("tid", -1);
 		viewTask.post("tid", tid);
 	}

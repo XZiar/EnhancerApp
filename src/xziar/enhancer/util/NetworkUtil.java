@@ -36,7 +36,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import xziar.enhancer.R;
-import xziar.enhancer.activity.MainActivity;
 
 public class NetworkUtil
 {
@@ -69,7 +68,7 @@ public class NetworkUtil
 	static
 	{
 		Builder builder = new OkHttpClient.Builder().cookieJar(cookiejar);
-		context = MainActivity.getAppContext();
+		context = BaseApplication.getContext();
 		InputStream ins = context.getResources().openRawResource(R.raw.network);
 		JSONObject data = new JSONObject();
 		try
@@ -437,18 +436,12 @@ public class NetworkUtil
 	{
 		private final Class<D> clz;
 		protected final String datname;
-		protected Context context = MainActivity.getAppContext();
 
 		public NetBeanTask(String addr, String obj, Class<D> clz)
 		{
 			super("/app" + addr, true);
 			this.clz = clz;
 			this.datname = obj;
-		}
-
-		public final void init(Context context)
-		{
-			this.context = context;
 		}
 
 		@Override

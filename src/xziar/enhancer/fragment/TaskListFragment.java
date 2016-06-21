@@ -59,7 +59,6 @@ public class TaskListFragment extends Fragment
 		adapter = new TaskAdapter(getActivity());
 		adapter.setItemClick(this);
 		list.setAdapter(adapter);
-		listTask.init(getActivity());
 		refreshData();
 		return view;
 	}

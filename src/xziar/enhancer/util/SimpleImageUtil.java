@@ -1,7 +1,7 @@
 package xziar.enhancer.util;
 
-import java.util.HashMap;
-
+import android.content.ComponentCallbacks2;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,12 +10,17 @@ import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.Log;
-import xziar.enhancer.activity.MainActivity;
+import android.util.SparseArray;
 
-public class SimpleImageUtil
+public class SimpleImageUtil implements ComponentCallbacks2
 {
-	private static HashMap<Integer, RoundedBitmapDrawable> cache = new HashMap<>();
-	private static Resources res = MainActivity.getAppContext().getResources();
+	private static SparseArray<RoundedBitmapDrawable> cache = new SparseArray<>();
+	private static Resources res = BaseApplication.getContext().getResources();
+
+	static
+	{
+		BaseApplication.getContext().registerComponentCallbacks(new SimpleImageUtil());
+	}
 
 	public static RoundedBitmapDrawable getCircleDrawable(int resID)
 	{
@@ -43,5 +48,21 @@ public class SimpleImageUtil
 		final Drawable newDrawable = DrawableCompat.wrap(drawable).mutate();
 		DrawableCompat.setTint(newDrawable, color);
 		return newDrawable;
+	}
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig)
+	{
+	}
+
+	@Override
+	public void onLowMemory()
+	{
+	}
+
+	@Override
+	public void onTrimMemory(int level)
+	{
+		cache.clear();
 	}
 }

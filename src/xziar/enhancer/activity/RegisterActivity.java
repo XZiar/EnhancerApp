@@ -57,7 +57,6 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_register);
 		initWidget();
-		regTask.init(this);
 	}
 
 	@Override

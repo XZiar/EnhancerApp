@@ -22,6 +22,7 @@ import xziar.enhancer.activity.LoginActivity;
 import xziar.enhancer.activity.MainActivity;
 import xziar.enhancer.pojo.AccountBean.Role;
 import xziar.enhancer.pojo.UserBean;
+import xziar.enhancer.util.BaseApplication;
 import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.NetworkUtil.NetTask;
 import xziar.enhancer.util.SimpleImageUtil;
@@ -87,7 +88,6 @@ public class UserFragment extends Fragment
 		headimg.setOnClickListener(this);
 		loginarea.setOnClickListener(this);
 		initDialog(getActivity());
-		chginfoTask.init(getActivity());
 		return view;
 	}
 
@@ -249,7 +249,7 @@ public class UserFragment extends Fragment
 		protected void onUnsuccess(int code, String data)
 		{
 			if (code == 200)
-				Toast.makeText(context, data, Toast.LENGTH_SHORT).show();
+				Toast.makeText(BaseApplication.getContext(), data, Toast.LENGTH_SHORT).show();
 			else
 				super.onUnsuccess(code, data);
 		}

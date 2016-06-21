@@ -44,8 +44,6 @@ public class PostViewActivity extends AppCompatActivity
 		actbar.setMenu(R.menu.menu_view);
 		actbar.setBackButton(true);
 
-		viewTask.init(this);
-
 		adapter = new ReplyAdapter(this);
 		comments.setAdapter(adapter);
 

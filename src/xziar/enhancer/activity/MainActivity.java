@@ -3,7 +3,6 @@ package xziar.enhancer.activity;
 import com.roughike.bottombar.BottomBar;
 import com.roughike.bottombar.OnMenuTabClickListener;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
@@ -21,6 +20,7 @@ import xziar.enhancer.widget.ActionBar;
 
 public class MainActivity extends AppCompatActivity implements OnMenuTabClickListener
 {
+	public static UserBean user;
 	private FragManager fragMan;
 	private BottomBar bottombar;
 	private TaskListFragment tasklistFrag;
@@ -31,9 +31,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 	private ActionBar actbar;
 	@BindView(R.id.main)
 	private LinearLayout mainholder;
-
-	private static Context appcontext;
-	public static UserBean user;
 
 	private void initWidget()
 	{
@@ -59,7 +56,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
-		appcontext = getApplicationContext();
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		ViewInject.inject(this);
@@ -102,11 +98,6 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
 		return fragMan.getCurFrag().onOptionsItemSelected(item);
-	}
-
-	public static Context getAppContext()
-	{
-		return appcontext;
 	}
 
 	public ActionBar getActbar()

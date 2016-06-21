@@ -1,25 +1,22 @@
 package xziar.enhancer.util;
 
 import android.util.Log;
-import xziar.enhancer.activity.MainActivity;
 
 public class SizeUtil
 {
+	private static final String LogTag = "SizeUtil";
 	private static float scale, fscale;
 	static
 	{
 		try
 		{
-			scale = MainActivity.getAppContext().getResources()
-					.getDisplayMetrics().density;
-			fscale = MainActivity.getAppContext().getResources()
-					.getDisplayMetrics().scaledDensity;
-			Log.d("SizeUtil", "SizeUtil initialize with scale=" + scale
-					+ ",fscale=" + fscale);
+			scale = BaseApplication.getContext().getResources().getDisplayMetrics().density;
+			fscale = BaseApplication.getContext().getResources().getDisplayMetrics().scaledDensity;
+			Log.d(LogTag, "SizeUtil initialize with scale=" + scale + ",fscale=" + fscale);
 		}
 		catch (Exception e)
 		{
-			Log.d("tester", "SizeUtil initialize fail");
+			Log.w(LogTag, "SizeUtil initialize fail");
 			scale = fscale = 1.0f;
 		}
 
