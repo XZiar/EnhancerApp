@@ -61,7 +61,7 @@ public class TaskViewActivity extends AppCompatActivity
 		protected void onSuccess(TaskBean data)
 		{
 			task = data;
-			String txt = task.getDescribe() + task.getDescribe() + task.getDescribe();
+			String txt = task.getDescribe();
 			describe.setText(Html.fromHtml(txt));
 			actbar.setTitle(task.getTitle());
 			actbar.setSubtitle(task.getLauncher());

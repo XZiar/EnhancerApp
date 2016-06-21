@@ -61,7 +61,7 @@ public class PostViewActivity extends AppCompatActivity
 		protected void onSuccess(final PostBean data)
 		{
 			post = data;
-			String txt = post.getDescribe() + post.getDescribe() + post.getDescribe();
+			String txt = post.getDescribe();
 			describe.setText(Html.fromHtml(txt));
 			actbar.setTitle(post.getTitle());
 			actbar.setSubtitle(post.getPoster());

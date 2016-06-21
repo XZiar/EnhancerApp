@@ -45,13 +45,9 @@ public class ActionBar extends AppBarLayout implements OnClickListener
 	private MenuInflater menuInf;
 	private int tintColor;
 	private ArrayList<View> padLeft = new ArrayList<>(), padRight = new ArrayList<>();
-	private HashMap<View, MenuItem> btnMap = new HashMap<>();
-	@BindView(R.id.leftBar)
-	private LinearLayout leftBar;
-	@BindView(R.id.midBar)
-	private LinearLayout midBar;
-	@BindView(R.id.rightBar)
-	private LinearLayout rightBar;
+	private HashMap<ImageButton, MenuItem> btnMap = new HashMap<>();
+	@BindView()
+	private LinearLayout leftBar, midBar, rightBar;
 	@BindView(R.id.toolbar)
 	private Toolbar toolbar;
 	@BindView(R.id.title)
@@ -159,105 +155,19 @@ public class ActionBar extends AppBarLayout implements OnClickListener
 		return btn;
 	}
 
-	protected View genButton(int resId)
+	protected ImageButton genButton(int resId)
 	{
 		return genButton(ContextCompat.getDrawable(context, resId));
 	}
 
-	protected View genButton(Drawable icon)
+	protected ImageButton genButton(Drawable icon)
 	{
 		ImageButton btn = genButton();
 		btn.setImageDrawable(SimpleImageUtil.tintDrawable(icon, tintColor));
 		return btn;
 	}
 
-	public void addMenu(int menuId, int resId, boolean isLeft)
-	{
-		View btn = genButton(resId);
-		MenuItem item = new ActionMenuItem(context, isLeft ? R.id.leftMenu : R.id.rightMenu, menuId,
-				100, 0, "");
-		addButton(item, btn, isLeft);
-	}
-
-	public boolean delMenu(int resId)
-	{
-		for (Map.Entry<View, MenuItem> e : btnMap.entrySet())
-		{
-			if (e.getValue().getItemId() == resId)
-			{
-				removeButton(e.getKey(), e.getValue().getGroupId() == R.id.leftMenu);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public void removeAllMenu()
-	{
-		// remove all exist menu
-		leftBar.removeAllViews();
-		rightBar.removeAllViews();
-		padLeft.clear();
-		padRight.clear();
-		btnMap.clear();
-	}
-
-	protected void removeButton(View v, boolean isLeft)
-	{
-		ArrayList<View> padObj, padOther;
-		LinearLayout barObj, barOther;
-		btnMap.remove(v);
-		if (isLeft)
-		{
-			padObj = padLeft;
-			padOther = padRight;
-			barObj = leftBar;
-			barOther = rightBar;
-		}
-		else
-		{
-			padObj = padRight;
-			padOther = padLeft;
-			barObj = rightBar;
-			barOther = leftBar;
-		}
-		if (padObj.size() < padOther.size())
-		{
-			// remove other padding
-			barOther.removeView(padOther.get(0));
-			padOther.remove(0);
-			barObj.removeView(v);
-		}
-		else
-		{
-			// add object padding
-			View padView = genButton(R.drawable.icon_add);
-			padObj.add(padView);
-			barObj.addView(padView, -1);
-			padView.setVisibility(View.INVISIBLE);
-		}
-	}
-
-	public void setMenu(int resId)
-	{
-		PopupMenu pm = new PopupMenu(context, null);
-		Menu menu = pm.getMenu();
-		menuInf.inflate(resId, menu);
-
-		removeAllMenu();
-
-		// add button
-		for (int a = 0; a < menu.size(); a++)
-		{
-			MenuItem item = menu.getItem(a);
-			boolean isLeft = (item.getGroupId() == R.id.leftMenu);
-			View btn = genButton(item.getIcon());
-			addButton(item, btn, isLeft);
-		}
-
-	}
-
-	protected void addButton(MenuItem item, View button, boolean isLeft)
+	protected void addButton(MenuItem item, ImageButton button, boolean isLeft)
 	{
 		btnMap.put(button, item);
 		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
@@ -298,37 +208,152 @@ public class ActionBar extends AppBarLayout implements OnClickListener
 		button.setOnClickListener(this);
 	}
 
-	public void setupActionBar(AppCompatActivity activity)
+	protected void delButton(ImageButton v)
 	{
-		this.ref = new SoftReference<AppCompatActivity>(activity);
-		menuInf = activity.getMenuInflater();
+		MenuItem item = btnMap.remove(v);
+		ArrayList<View> padObj, padOther;
+		LinearLayout barObj, barOther;
+		if (item.getGroupId() == R.id.leftMenu)
+		{
+			padObj = padLeft;
+			padOther = padRight;
+			barObj = leftBar;
+			barOther = rightBar;
+		}
+		else
+		{
+			padObj = padRight;
+			padOther = padLeft;
+			barObj = rightBar;
+			barOther = leftBar;
+		}
+		if (padObj.size() < padOther.size())
+		{
+			// remove other padding
+			barOther.removeView(padOther.get(0));
+			padOther.remove(0);
+			barObj.removeView(v);
+		}
+		else
+		{
+			// add object padding
+			View padView = genButton(R.drawable.icon_add);
+			padObj.add(padView);
+			barObj.addView(padView, -1);
+			padView.setVisibility(View.INVISIBLE);
+		}
+	}
+
+	protected ImageButton findButton(int menuId)
+	{
+		for (Map.Entry<ImageButton, MenuItem> e : btnMap.entrySet())
+		{
+			if (e.getValue().getItemId() == menuId)
+				return e.getKey();
+		}
+		return null;
+	}
+
+	public void setMenu(int resId)
+	{
+		removeAllMenu();
+		PopupMenu pm = new PopupMenu(context, null);
+		Menu menu = pm.getMenu();
+		menuInf.inflate(resId, menu);
+		// add button
+		for (int a = 0; a < menu.size(); a++)
+		{
+			MenuItem item = menu.getItem(a);
+			boolean isLeft = (item.getGroupId() == R.id.leftMenu);
+			ImageButton btn = genButton(item.getIcon());
+			addButton(item, btn, isLeft);
+		}
+	}
+
+	public void addMenu(int menuId, int resId, boolean isLeft)
+	{
+		ImageButton btn = genButton(resId);
+		MenuItem item = new ActionMenuItem(context, isLeft ? R.id.leftMenu : R.id.rightMenu, menuId,
+				100, 0, "");
+		addButton(item, btn, isLeft);
 	}
 
 	public void setBackButton(boolean isEnable)
 	{
 		if (isEnable && !btnMap.values().contains(action_back))
 		{
-			View btn = genButton(R.drawable.icon_back);
+			ImageButton btn = genButton(R.drawable.icon_back);
 			addButton(action_back, btn, true);
 		}
 	}
 
+	public boolean enableButton(int menuId)
+	{
+		ImageButton btn = findButton(menuId);
+		if (btn != null)
+		{
+			btn.setImageDrawable(SimpleImageUtil.tintDrawable(btn.getBackground(), tintColor));
+			btn.setOnClickListener(this);
+			return true;
+		}
+		return false;
+	}
+
+	public boolean disableButton(int menuId)
+	{
+		ImageButton btn = findButton(menuId);
+		if (btn != null)
+		{
+			btn.setImageDrawable(SimpleImageUtil.tintDrawable(btn.getDrawable(), 0xAAAAAAAA));
+			btn.setOnClickListener(null);
+			return true;
+		}
+		return false;
+	}
+
+	public boolean delMenu(int menuId)
+	{
+		ImageButton btn = findButton(menuId);
+		if (btn != null)
+		{
+			delButton(btn);
+			return true;
+		}
+		return false;
+	}
+
+	public void removeAllMenu()
+	{
+		// remove all exist menu
+		leftBar.removeAllViews();
+		rightBar.removeAllViews();
+		padLeft.clear();
+		padRight.clear();
+		btnMap.clear();
+	}
+
+	public void setupActionBar(AppCompatActivity activity)
+	{
+		this.ref = new SoftReference<AppCompatActivity>(activity);
+		menuInf = activity.getMenuInflater();
+	}
+
 	public void setSubtitle(CharSequence txt)
 	{
+		tvSubtitle.setText(txt);
 		if (TextUtils.isEmpty(txt))
 			tvSubtitle.setVisibility(View.GONE);
 		else
 			tvSubtitle.setVisibility(View.VISIBLE);
-		tvSubtitle.setText(txt);
 	}
 
 	public void setTitle(CharSequence txt)
 	{
+		tvTitle.setText(txt);
 		if (TextUtils.isEmpty(txt))
 			tvTitle.setVisibility(View.GONE);
 		else
 			tvTitle.setVisibility(View.VISIBLE);
-		tvTitle.setText(txt);
 	}
 
 	@Override

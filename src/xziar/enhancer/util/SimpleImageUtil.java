@@ -40,7 +40,7 @@ public class SimpleImageUtil
 
 	public static Drawable tintDrawable(Drawable drawable, int color)
 	{
-		final Drawable newDrawable = DrawableCompat.wrap(drawable);
+		final Drawable newDrawable = DrawableCompat.wrap(drawable).mutate();
 		DrawableCompat.setTint(newDrawable, color);
 		return newDrawable;
 	}

@@ -71,7 +71,7 @@ public class TaskListFragment extends Fragment
 		{
 			actbar.setMenu(R.menu.menu_view);
 			if (MainActivity.user != null && MainActivity.user.getAccountRole() != Role.company)
-				actbar.delMenu(R.id.action_add);
+				actbar.disableButton(R.id.action_add);
 		}
 		super.onHiddenChanged(hidden);
 	}
@@ -116,6 +116,13 @@ public class TaskListFragment extends Fragment
 			{
 				refreshData();
 				openTask(data.getIntExtra("tid", 0));
+			}
+			if (data.getBooleanExtra("user_changed", false))
+			{
+				if (MainActivity.user != null & MainActivity.user.getAccountRole() != Role.company)
+					actbar.disableButton(R.id.action_add);
+				else
+					actbar.enableButton(R.id.action_add);
 			}
 		}
 		super.onActivityResult(requestCode, resultCode, data);

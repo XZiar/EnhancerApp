@@ -49,10 +49,6 @@ public class UserFragment extends Fragment
 	private LinearLayout loginarea;
 	@BindView(R.id.headimg)
 	private ImageView headimg;
-	@BindView(R.id.name)
-	private TextView name;
-	@BindView(R.id.des)
-	private TextView des;
 	@BindView(R.id.score)
 	private NumberBox score;
 	@BindView(R.id.task_finish)
@@ -61,12 +57,8 @@ public class UserFragment extends Fragment
 	private NumberBox task_ongoing;
 	@BindView(R.id.oparea)
 	private LinearLayout oparea;
-	@BindView(R.id.chgpwd)
-	private TextView chgpwd;
-	@BindView(R.id.ongoing)
-	private TextView ongoing;
-	@BindView(R.id.finish)
-	private TextView finish;
+	@BindView(onClick = "this")
+	private TextView name, des, chgpwd, mypost, myreply;
 
 	@SuppressLint("InflateParams")
 	private void initDialog(Context context)
@@ -94,7 +86,6 @@ public class UserFragment extends Fragment
 		setHasOptionsMenu(true);
 		headimg.setOnClickListener(this);
 		loginarea.setOnClickListener(this);
-		chgpwd.setOnClickListener(this);
 		initDialog(getActivity());
 		chginfoTask.init(getActivity());
 		return view;
@@ -200,10 +191,6 @@ public class UserFragment extends Fragment
 		if (v == headimg)
 		{
 			chgheadDlg.show();
-		}
-		else if (v == loginarea)
-		{
-			logoutDlg.show();
 		}
 		else if (v == chgpwd)
 		{

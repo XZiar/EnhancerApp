@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
@@ -16,8 +17,7 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_gravity="center"
-            android:layout_marginBottom="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_margin="4dp"
             android:scaleType="fitXY"
             android:src="@drawable/defaulthead" />
 
@@ -44,7 +44,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:divider="@drawable/divider_vertical"
             android:dividerPadding="12dp"
             android:orientation="horizontal"
@@ -86,48 +86,51 @@
         android:id="@+id/oparea"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:divider="@drawable/divider_vertical"
+        android:divider="@drawable/divider_horizontal"
+        android:dividerPadding="8dp"
         android:orientation="vertical"
         android:padding="8dp"
         android:showDividers="middle" >
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@drawable/divider_vertical" />
 
         <TextView
             android:id="@+id/chgpwd"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="8dp"
-            android:paddingEnd="32dp"
-            android:paddingStart="32dp"
-            android:paddingTop="8dp"
+            android:layout_margin="8dp"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
             android:text="修改密码"
-            android:textSize="20sp" />
+            android:textSize="18sp" />
 
         <TextView
-            android:id="@+id/ongoing"
+            android:id="@+id/mypost"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="8dp"
-            android:paddingEnd="32dp"
-            android:paddingStart="32dp"
-            android:paddingTop="8dp"
-            android:text="进行中任务"
-            android:textSize="20sp" />
+            android:layout_margin="8dp"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:text="我的帖子"
+            android:textSize="18sp" />
 
         <TextView
-            android:id="@+id/finish"
+            android:id="@+id/myreply"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="8dp"
-            android:paddingEnd="32dp"
-            android:paddingStart="32dp"
-            android:paddingTop="8dp"
-            android:text="已完成任务"
-            android:textSize="20sp" />
+            android:layout_margin="8dp"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:text="我的回复"
+            android:textSize="18sp" />
+        
+        <TextView
+            android:id="@+id/about"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:text="关于本软件"
+            android:textSize="18sp" />
     </LinearLayout>
 
 </LinearLayout>
