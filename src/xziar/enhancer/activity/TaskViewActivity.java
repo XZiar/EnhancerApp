@@ -3,7 +3,9 @@ package xziar.enhancer.activity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 import xziar.enhancer.R;
 import xziar.enhancer.pojo.TaskBean;
 import xziar.enhancer.util.NetworkUtil.NetBeanTask;
@@ -25,15 +27,31 @@ public class TaskViewActivity extends AppCompatActivity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_task_view);
 		ViewInject.inject(this);
-		actbar.setTitle("话题");
+		actbar.setupActionBar(this);
+		actbar.setTitle("任务");
 		actbar.setSubtitle("发起人");
-
-		// actbar.setupActionBar(this);
-		// actbar.setBackButton(true);
-
+		actbar.setMenu(R.menu.menu_view);
+		actbar.setBackButton(true);
 		viewTask.init(this);
 		int tid = getIntent().getIntExtra("tid", -1);
 		viewTask.post("tid", tid);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		switch (item.getItemId())
+		{
+		case R.id.action_back:
+			finish();
+			break;
+		case R.id.action_add:
+			Toast.makeText(this, "press add", Toast.LENGTH_SHORT).show();
+			break;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+		return true;
 	}
 
 	private NetBeanTask<TaskBean> viewTask = new NetBeanTask<TaskBean>("/taskview", "task",

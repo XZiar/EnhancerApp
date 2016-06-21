@@ -12,6 +12,10 @@
             android:title="Back"/>
     </group>
     <group android:id="@+id/rightMenu" >
+        <item
+            android:id="@+id/action_send"
+            android:icon="@drawable/icon_send"
+            android:title="Send"/>
     </group>
 
 </menu>

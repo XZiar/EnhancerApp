@@ -14,34 +14,27 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme"
-        android:supportsRtl="true" >
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme" >
         <activity
-            android:name=".activity.MainActivity">
+            android:name=".activity.MainActivity"
+            android:windowSoftInputMode="stateAlwaysHidden" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activity.LoginActivity" />
+        <activity android:name=".activity.RegisterActivity" />
+        <activity android:name=".activity.TaskViewActivity" />
+        <activity android:name=".activity.PostViewActivity" />
         <activity
-            android:name=".activity.LoginActivity">
-        </activity>
+            android:name=".activity.AddTaskActivity"
+            android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".activity.RegisterActivity">
-        </activity>
-        <activity
-            android:name=".activity.TaskViewActivity">
-        </activity>
-        <activity
-            android:name=".activity.PostViewActivity">
-        </activity>
-        <activity
-            android:name=".activity.AddTaskActivity">
-        </activity>
-        <activity
-            android:name=".activity.AddPostActivity">
-        </activity>
+            android:name=".activity.AddPostActivity"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

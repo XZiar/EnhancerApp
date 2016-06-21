@@ -254,15 +254,28 @@
         </LinearLayout>
     </HorizontalScrollView>
 
-    <jp.wasabeef.richeditor.RichEditor
-        android:id="@+id/reditor"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="match_parent"
+        android:fillViewport="true" >
 
-    <TextView
-        android:id="@+id/preview"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="16sp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+            <jp.wasabeef.richeditor.RichEditor
+                android:id="@+id/reditor"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:id="@+id/preview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </ScrollView>
 
 </merge>

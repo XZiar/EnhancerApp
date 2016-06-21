@@ -15,10 +15,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import xziar.enhancer.R;
+import xziar.enhancer.activity.AddTaskActivity;
+import xziar.enhancer.activity.LoginActivity;
 import xziar.enhancer.activity.MainActivity;
 import xziar.enhancer.activity.TaskViewActivity;
 import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.adapter.TaskAdapter;
+import xziar.enhancer.pojo.AccountBean.Role;
 import xziar.enhancer.pojo.TaskBean;
 import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.ViewInject;
@@ -39,9 +42,9 @@ public class TaskListFragment extends Fragment
 	@BindView(R.id.list)
 	private RecyclerView list;
 
-	private void refreshData()
+	private static enum reqCode
 	{
-		listTask.post("from", 0);
+		login, addtask, viewtask
 	}
 
 	@Override
@@ -60,12 +63,16 @@ public class TaskListFragment extends Fragment
 		refreshData();
 		return view;
 	}
-	
+
 	@Override
 	public void onHiddenChanged(boolean hidden)
 	{
 		if (!hidden)
+		{
 			actbar.setMenu(R.menu.menu_view);
+			if (MainActivity.user != null && MainActivity.user.getAccountRole() != Role.company)
+				actbar.delMenu(R.id.action_add);
+		}
 		super.onHiddenChanged(hidden);
 	}
 
@@ -75,7 +82,21 @@ public class TaskListFragment extends Fragment
 		switch (item.getItemId())
 		{
 		case R.id.action_add:
-			Toast.makeText(getActivity(), "touch add in tasklist", Toast.LENGTH_SHORT).show();
+			if (MainActivity.user != null)
+			{
+				if (MainActivity.user.getAccountRole() == Role.company)
+				{
+					Intent it = new Intent(getActivity(), AddTaskActivity.class);
+					startActivityForResult(it, reqCode.addtask.ordinal());
+				}
+				else
+					Toast.makeText(getActivity(), "只有企业用户才能发布任务", Toast.LENGTH_SHORT).show();
+			}
+			else
+			{
+				Intent it = new Intent(getActivity(), LoginActivity.class);
+				startActivityForResult(it, reqCode.login.ordinal());
+			}
 			break;
 		case R.id.action_top:
 			list.smoothScrollToPosition(0);
@@ -87,11 +108,30 @@ public class TaskListFragment extends Fragment
 	}
 
 	@Override
-	public void OnClick(TaskBean data)
+	public void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		if (data != null)
+		{
+			if (data.getBooleanExtra("tasklist_changed", false))
+			{
+				refreshData();
+				openTask(data.getIntExtra("tid", 0));
+			}
+		}
+		super.onActivityResult(requestCode, resultCode, data);
+	}
+
+	public void openTask(int tid)
 	{
 		Intent it = new Intent(getActivity(), TaskViewActivity.class);
-		it.putExtra("tid", data.getTid());
-		startActivityForResult(it, 1442);
+		it.putExtra("tid", tid);
+		startActivityForResult(it, reqCode.viewtask.ordinal());
+	}
+
+	@Override
+	public void OnClick(TaskBean data)
+	{
+		openTask(data.getTid());
 	}
 
 	@Override
@@ -100,8 +140,13 @@ public class TaskListFragment extends Fragment
 		refreshData();
 	}
 
-	private NetBeanTask<List<TaskBean>> listTask = new NetBeanTask<List<TaskBean>>(
-			"/task", "tasks", TaskBean.class, true)
+	private void refreshData()
+	{
+		listTask.post("from", 0);
+	}
+
+	private NetBeanTask<List<TaskBean>> listTask = new NetBeanTask<List<TaskBean>>("/task", "tasks",
+			TaskBean.class, true)
 	{
 		@Override
 		protected void onDone()

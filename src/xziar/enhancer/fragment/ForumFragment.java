@@ -42,7 +42,7 @@ public class ForumFragment extends Fragment
 
 	private static enum reqCode
 	{
-		login, addpost
+		login, addpost, viewpost
 	}
 
 	@Override
@@ -101,6 +101,7 @@ public class ForumFragment extends Fragment
 			if (data.getBooleanExtra("forum_changed", false))
 			{
 				refreshData();
+				openPost(data.getIntExtra("pid", 0));
 			}
 		}
 		super.onActivityResult(requestCode, resultCode, data);
@@ -111,12 +112,17 @@ public class ForumFragment extends Fragment
 		listTask.post("from", 0);
 	}
 
+	private void openPost(int pid)
+	{
+		Intent it = new Intent(getActivity(), PostViewActivity.class);
+		it.putExtra("pid", pid);
+		startActivityForResult(it, reqCode.viewpost.ordinal());
+	}
+
 	@Override
 	public void OnClick(PostBean data)
 	{
-		Intent it = new Intent(getActivity(), PostViewActivity.class);
-		it.putExtra("pid", data.getPid());
-		startActivityForResult(it, 1442);
+		openPost(data.getPid());
 	}
 
 	@Override

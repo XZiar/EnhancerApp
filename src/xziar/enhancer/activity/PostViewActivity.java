@@ -27,10 +27,9 @@ public class PostViewActivity extends AppCompatActivity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_post_view);
 		ViewInject.inject(this);
+		actbar.setupActionBar(this);
 		actbar.setTitle("话题");
 		actbar.setSubtitle("发起人");
-
-		actbar.setupActionBar(this);
 		actbar.setMenu(R.menu.menu_view);
 		actbar.setBackButton(true);
 		viewTask.init(this);
@@ -43,7 +42,6 @@ public class PostViewActivity extends AppCompatActivity
 	{
 		switch (item.getItemId())
 		{
-		case 0x102002c:
 		case R.id.action_back:
 			finish();
 			break;
