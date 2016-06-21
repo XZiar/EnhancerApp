@@ -37,7 +37,7 @@ public class PostAdapter extends CommonAdapter<PostBean, PostAdapter.PostHolder>
 		}
 
 		@Override
-		public void setData(PostBean data)
+		public void setData(PostBean data, int idx)
 		{
 			title.setText(data.getTitle());
 			poster.setText(data.getPoster());

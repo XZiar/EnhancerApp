@@ -27,7 +27,7 @@ public class GroupAdapter
 		}
 
 		@Override
-		public void setData(GroupBean data)
+		public void setData(GroupBean data, int idx)
 		{
 			name.setText(data.getName());
 			describe.setText(data.getDescribe());

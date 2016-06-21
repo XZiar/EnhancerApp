@@ -89,8 +89,7 @@ public class AddTaskActivity extends AppCompatActivity implements OnClickListene
 		return super.onOptionsItemSelected(item);
 	}
 
-	private NetBeanTask<String> postTask = new NetBeanTask<String>("/addtask", "msg", String.class,
-			false)
+	private NetBeanTask<String> postTask = new NetBeanTask<String>("/addtask", "msg", String.class)
 	{
 		@Override
 		protected void onStart()

@@ -55,7 +55,7 @@ public class TaskViewActivity extends AppCompatActivity
 	}
 
 	private NetBeanTask<TaskBean> viewTask = new NetBeanTask<TaskBean>("/taskview", "task",
-			TaskBean.class, false)
+			TaskBean.class)
 	{
 		@Override
 		protected void onSuccess(TaskBean data)

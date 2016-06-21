@@ -435,17 +435,15 @@ public class NetworkUtil
 
 	public static class NetBeanTask<D> extends NetTask<D>
 	{
-		private final Class<?> clz;
-		private final String datname;
-		private final boolean isArray;
+		private final Class<D> clz;
+		protected final String datname;
 		protected Context context = MainActivity.getAppContext();
 
-		public NetBeanTask(String addr, String obj, Class<?> clz, boolean isArray)
+		public NetBeanTask(String addr, String obj, Class<D> clz)
 		{
 			super("/app" + addr, true);
 			this.clz = clz;
 			this.datname = obj;
-			this.isArray = isArray;
 		}
 
 		public final void init(Context context)
@@ -453,7 +451,6 @@ public class NetworkUtil
 			this.context = context;
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		protected D parse(ResponseBody data) throws IOException, ParseResultFailException
 		{
@@ -461,12 +458,7 @@ public class NetworkUtil
 			{
 				JSONObject obj = JSON.parseObject(data.string());
 				if (obj.getBooleanValue("success"))
-				{
-					if (isArray)
-						return (D) JSON.parseArray(obj.getString(datname), clz);
-					else
-						return (D) JSON.parseObject(obj.getString(datname), clz);
-				}
+					return JSON.parseObject(obj.getString(datname), clz);
 				else
 					throw new ParseResultFailException(obj.getString("msg"));
 			}
@@ -481,6 +473,35 @@ public class NetworkUtil
 		protected void onFail()
 		{
 			Toast.makeText(context, "ÍøÂç´íÎó", Toast.LENGTH_SHORT).show();
+		}
+	};
+
+	public static class NetBeansTask<D> extends NetBeanTask<List<D>>
+	{
+		private final Class<D> baseclz;
+
+		public NetBeansTask(String addr, String obj, Class<D> clz)
+		{
+			super(addr, obj, null);
+			baseclz = clz;
+		}
+
+		@Override
+		protected List<D> parse(ResponseBody data) throws IOException, ParseResultFailException
+		{
+			try
+			{
+				JSONObject obj = JSON.parseObject(data.string());
+				if (obj.getBooleanValue("success"))
+					return JSON.parseArray(obj.getString(datname), baseclz);
+				else
+					throw new ParseResultFailException(obj.getString("msg"));
+			}
+			catch (JSONException e)
+			{
+				Log.w(LogTag, "error when parse response to json array", e);
+				throw new ParseResultFailException("error syntax");
+			}
 		}
 	};
 }

@@ -99,7 +99,7 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 	}
 
 	private NetBeanTask<String> regTask = new NetBeanTask<String>("/register", "msg",
-			String.class, false)
+			String.class)
 	{
 		@Override
 		protected void onStart()

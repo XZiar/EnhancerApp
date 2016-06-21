@@ -37,7 +37,7 @@ public class TaskAdapter extends CommonAdapter<TaskBean, TaskAdapter.TaskHolder>
 		}
 
 		@Override
-		public void setData(TaskBean data)
+		public void setData(TaskBean data, int idx)
 		{
 			title.setText(data.getTitle());
 			launcher.setText(data.getLauncher());

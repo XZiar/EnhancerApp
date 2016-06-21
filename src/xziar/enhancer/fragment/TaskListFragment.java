@@ -23,7 +23,7 @@ import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.adapter.TaskAdapter;
 import xziar.enhancer.pojo.AccountBean.Role;
 import xziar.enhancer.pojo.TaskBean;
-import xziar.enhancer.util.NetworkUtil.NetBeanTask;
+import xziar.enhancer.util.NetworkUtil.NetBeansTask;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.util.ViewInject.ObjView;
@@ -35,7 +35,7 @@ public class TaskListFragment extends Fragment
 {
 	private View view;
 	private ActionBar actbar;
-	ArrayList<TaskBean> ds = new ArrayList<>();
+	private ArrayList<TaskBean> tasks = new ArrayList<>();
 	private TaskAdapter adapter;
 	@BindView(R.id.listwrap)
 	private SwipeRefreshLayout listwrap;
@@ -152,8 +152,8 @@ public class TaskListFragment extends Fragment
 		listTask.post("from", 0);
 	}
 
-	private NetBeanTask<List<TaskBean>> listTask = new NetBeanTask<List<TaskBean>>("/task", "tasks",
-			TaskBean.class, true)
+	private NetBeansTask<TaskBean> listTask = new NetBeansTask<TaskBean>("/task", "tasks",
+			TaskBean.class)
 	{
 		@Override
 		protected void onDone()
@@ -164,8 +164,8 @@ public class TaskListFragment extends Fragment
 		@Override
 		protected void onSuccess(List<TaskBean> data)
 		{
-			ds = new ArrayList<>(data);
-			adapter.refresh(ds);
+			tasks = new ArrayList<>(data);
+			adapter.refresh(tasks);
 		}
 	};
 

@@ -16,14 +16,38 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp" >
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp" >
 
-        <TextView
-            android:id="@+id/describe"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="内容还没加载出来呢！" />
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                app:contentPadding="8dp"
+                app:cardCornerRadius="0dp"
+                app:cardElevation="3dp"
+                app:cardUseCompatPadding="true" >
+
+                <TextView
+                    android:id="@+id/describe"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="内容还没加载出来呢！"
+                    android:textSize="16sp" />
+            </android.support.v7.widget.CardView>
+
+            <xziar.enhancer.widget.CompatRecyclerView
+                android:id="@+id/comments"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical" >
+            </xziar.enhancer.widget.CompatRecyclerView>
+        </LinearLayout>
     </android.support.v4.widget.NestedScrollView>
 
 </android.support.design.widget.CoordinatorLayout>

@@ -21,7 +21,7 @@ import xziar.enhancer.activity.PostViewActivity;
 import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.adapter.PostAdapter;
 import xziar.enhancer.pojo.PostBean;
-import xziar.enhancer.util.NetworkUtil.NetBeanTask;
+import xziar.enhancer.util.NetworkUtil.NetBeansTask;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.util.ViewInject.ObjView;
@@ -131,8 +131,8 @@ public class ForumFragment extends Fragment
 		refreshData();
 	}
 
-	private NetBeanTask<List<PostBean>> listTask = new NetBeanTask<List<PostBean>>("/forum",
-			"posts", PostBean.class, true)
+	private NetBeansTask<PostBean> listTask = new NetBeansTask<PostBean>("/forum", "posts",
+			PostBean.class)
 	{
 		@Override
 		protected void onDone()

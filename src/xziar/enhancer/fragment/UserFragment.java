@@ -236,7 +236,7 @@ public class UserFragment extends Fragment
 	};
 
 	private NetBeanTask<String> chginfoTask = new NetBeanTask<String>("/chgmyinfo", "msg",
-			String.class, false)
+			String.class)
 	{
 		@Override
 		protected void onSuccess(String data)
