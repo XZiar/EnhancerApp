@@ -22,11 +22,10 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layoutDirection="rtl"
                 android:orientation="horizontal" >
 
                 <LinearLayout
-                    android:id="@+id/rightBar"
+                    android:id="@+id/leftBar"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
@@ -34,46 +33,40 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layoutDirection="ltr"
-                    android:orientation="horizontal" >
+                    android:id="@+id/midBar"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:orientation="vertical" >
 
-                    <LinearLayout
-                        android:id="@+id/leftBar"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="center"
-                        android:orientation="horizontal" >
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/midBar"
+                    <TextView
+                        android:id="@+id/title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:orientation="vertical" >
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:singleLine="true"
+                        android:text="title"
+                        android:textSize="@dimen/abc_text_size_title_material_toolbar" />
 
-                        <TextView
-                            android:id="@+id/title"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:gravity="center"
-                            android:singleLine="true"
-                            android:text="title"
-                            android:textSize="@dimen/abc_text_size_title_material_toolbar" />
+                    <TextView
+                        android:id="@+id/subtitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:singleLine="true"
+                        android:text="subtitle"
+                        android:textSize="@dimen/abc_text_size_subtitle_material_toolbar" />
+                </LinearLayout>
 
-                        <TextView
-                            android:id="@+id/subtitle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:gravity="center"
-                            android:singleLine="true"
-                            android:text="subtitle"
-                            android:textSize="@dimen/abc_text_size_subtitle_material_toolbar" />
-                    </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/rightBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:orientation="horizontal" >
                 </LinearLayout>
             </LinearLayout>
         </android.support.v7.widget.Toolbar>

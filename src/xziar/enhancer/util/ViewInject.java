@@ -202,6 +202,13 @@ public class ViewInject
 					try
 					{
 						Object view = meth.invoke(viewHolder, inj.id);
+						if (view == null)
+						{
+							Log.d(LogTag, "findView return null, something maybe wrong");
+							Log.d(LogTag, "null here:" + viewHolder + " ==> " + inj.id + " ==> "
+									+ inj.obj.getName());
+							continue;
+						}
 						try
 						{
 							inj.obj.set(obj, view);

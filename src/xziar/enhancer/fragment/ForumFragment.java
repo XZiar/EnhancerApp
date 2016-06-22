@@ -57,6 +57,7 @@ public class ForumFragment extends Fragment
 		adapter = new PostAdapter(getActivity());
 		adapter.setItemClick(this);
 		list.setAdapter(adapter);
+		listwrap.setRefreshing(true);
 		refreshData();
 		return view;
 	}

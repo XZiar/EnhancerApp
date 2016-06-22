@@ -239,6 +239,7 @@ public class ActionBar extends AppBarLayout implements OnClickListener
 			// add object padding
 			View padView = genButton(R.drawable.icon_add);
 			padObj.add(padView);
+			barObj.removeView(v);
 			barObj.addView(padView, -1);
 			padView.setVisibility(View.INVISIBLE);
 		}

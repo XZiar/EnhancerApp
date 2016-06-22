@@ -2,9 +2,21 @@ package xziar.enhancer.pojo;
 
 public class TaskBean
 {
-	public enum Status
+	public static enum Status
 	{
-		oncheck, onapply, onliscene, ongoing, onfinish, closed;
+		oncheck("审核中"), onapply("申请中"), onliscene("申请截止"), ongoing("进行中"), onfinish("已完结"), closed(
+				"已关闭");
+		private String txt;
+
+		private Status(String txt)
+		{
+			this.txt = txt;
+		}
+
+		public String toTxt()
+		{
+			return txt;
+		}
 	}
 
 	private int tid = -1;

@@ -37,8 +37,8 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 	private ArrayList<ReplyBean> replys = new ArrayList<>();
 	@BindView
 	private FloatLabelLayout replypart;
-	@BindView(value = R.id.btn_send, onClick = "this")
-	private Button send;
+	@BindView(onClick = "this")
+	private Button btn_send;
 	@BindView(R.id.editor)
 	private RichTextEditor editor;
 	@BindView(R.id.describe)
@@ -62,10 +62,10 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 
 		adapter = new ReplyAdapter(this);
 		comments.setAdapter(adapter);
+		refreshView();
 		int pid = getIntent().getIntExtra("pid", -1);
 		viewTask.post("pid", pid);
 		replyTask.post("pid", pid);
-		modifyView();
 	}
 
 	@Override
@@ -85,7 +85,6 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 			else
 			{
 				comments.scrollToIndex(-2);
-				// comments.smoothScrollToPosition(replys.size());
 			}
 			break;
 		default:
@@ -94,12 +93,12 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 		return true;
 	}
 
-	private void modifyView()
+	private void refreshView()
 	{
 		if (MainActivity.user != null)
-			replypart.setVisibility(View.VISIBLE);
+			adapter.setFooterView(replypart);
 		else
-			replypart.setVisibility(View.GONE);
+			adapter.setFooterView(null);
 	}
 
 	@Override
@@ -109,7 +108,7 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 		{
 			if (data.getBooleanExtra("user_changed", false))
 			{
-				modifyView();
+				refreshView();
 			}
 		}
 		super.onActivityResult(requestCode, resultCode, data);
@@ -118,7 +117,7 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 	@Override
 	public void onClick(View v)
 	{
-		if (v == send)
+		if (v == btn_send)
 			postTask.post("reply.pid", post.getPid(), "reply.describe", editor.getContent());
 	}
 

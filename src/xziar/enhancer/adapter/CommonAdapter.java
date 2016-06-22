@@ -59,10 +59,21 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends RecyclerView
 
 	public void setHeaderFooter(View header, View footer)
 	{
-		if (header != null)
-			this.header = genHolder(header);
-		if (footer != null)
-			this.footer = genHolder(footer);
+		this.header = (header == null ? null : genHolder(header));
+		this.footer = (footer == null ? null : genHolder(footer));
+		notifyDataSetChanged();
+	}
+
+	public void setHeaderView(View header)
+	{
+		this.header = (header == null ? null : genHolder(header));
+		notifyDataSetChanged();
+	}
+
+	public void setFooterView(View footer)
+	{
+		this.footer = (footer == null ? null : genHolder(footer));
+		notifyDataSetChanged();
 	}
 
 	public void refresh(ArrayList<TD> datas)
