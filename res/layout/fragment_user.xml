@@ -34,6 +34,7 @@
             android:id="@+id/des"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:drawableEnd="@drawable/icon_edit"
             android:gravity="center"
             android:maxLines="2"
             android:paddingEnd="8dp"
@@ -97,8 +98,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:paddingLeft="24dp"
-            android:paddingRight="24dp"
+            android:drawablePadding="16dp"
+            android:drawableStart="@drawable/icon_pwd"
+            android:paddingEnd="24dp"
+            android:paddingStart="24dp"
             android:text="修改密码"
             android:textSize="18sp" />
 
@@ -107,8 +110,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:paddingLeft="24dp"
-            android:paddingRight="24dp"
+            android:drawablePadding="16dp"
+            android:drawableStart="@drawable/icon_post"
+            android:paddingEnd="24dp"
+            android:paddingStart="24dp"
             android:text="我的帖子"
             android:textSize="18sp" />
 
@@ -117,19 +122,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:paddingLeft="24dp"
-            android:paddingRight="24dp"
+            android:drawablePadding="16dp"
+            android:drawableStart="@drawable/icon_reply"
+            android:paddingEnd="24dp"
+            android:paddingStart="24dp"
             android:text="我的回复"
             android:textSize="18sp" />
-        
+
         <TextView
             android:id="@+id/about"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:paddingLeft="24dp"
-            android:paddingRight="24dp"
-            android:text="关于本软件"
+            android:drawablePadding="16dp"
+            android:drawableStart="@drawable/icon_about"
+            android:paddingEnd="24dp"
+            android:paddingStart="24dp"
+            android:text="关于Enhancer"
             android:textSize="18sp" />
     </LinearLayout>
 

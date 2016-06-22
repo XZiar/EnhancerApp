@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 		groupFrag = new GroupFragment();
 		userFrag = new UserFragment();
 		fragMan = new FragManager(this, R.id.main);
-		fragMan.add(tasklistFrag, R.id.tasklist, 0xFFE91E63, "任务")
+		fragMan.add(tasklistFrag, R.id.task, 0xFFE91E63, "任务")
 				.add(forumFrag, R.id.forum, 0xFF9C27B0, "论坛")
 				.add(groupFrag, R.id.group, 0xFF3F51B5, "团队")
 				.add(userFrag, R.id.user, 0xFF2196F3, "我").hideAll().doit();
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements OnMenuTabClickLis
 		bottombar.setMaxFixedTabs(3);
 		bottombar.setItems(R.menu.bottombar);
 		bottombar.setOnMenuTabClickListener(this);
-		bottombar.mapColorForTab(0, (int) fragMan.getData(R.id.tasklist));
+		bottombar.mapColorForTab(0, (int) fragMan.getData(R.id.task));
 		bottombar.mapColorForTab(1, (int) fragMan.getData(R.id.forum));
 		bottombar.mapColorForTab(2, (int) fragMan.getData(R.id.group));
 		bottombar.mapColorForTab(3, (int) fragMan.getData(R.id.user));

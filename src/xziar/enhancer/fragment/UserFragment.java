@@ -44,8 +44,8 @@ public class UserFragment extends Fragment
 	private View view;
 	private ActionBar actbar;
 	private UserBean user;
-	private AlertDialog logoutDlg, chgpwdDlg, chgheadDlg;
-	private EditText oldpwd, newpwd;
+	private AlertDialog logoutDlg, chgpwdDlg, chgdesDlg, chgheadDlg, aboutDlg;
+	private EditText oldpwd, newpwd, newdes;
 	@BindView
 	private LinearLayout loginarea, oparea;
 	@BindView
@@ -53,7 +53,7 @@ public class UserFragment extends Fragment
 	@BindView
 	private NumberBox score, task_finish, task_ongoing;
 	@BindView(onClick = "this")
-	private TextView name, des, chgpwd, mypost, myreply;
+	private TextView name, des, chgpwd, mypost, myreply, about;
 
 	@SuppressLint("InflateParams")
 	private void initDialog(Context context)
@@ -61,14 +61,28 @@ public class UserFragment extends Fragment
 		logoutDlg = new AlertDialog.Builder(context).setTitle("退出登录").setMessage("确定退出登录吗？")
 				.setPositiveButton("OK", this).setNegativeButton("CANCEL", null).create();
 
-		View chgpwdView = LayoutInflater.from(context).inflate(R.layout.dialog_chgpwd, null);
+		View chgpwdView = LayoutInflater.from(context).inflate(R.layout.dialog_chginfo, null);
 		oldpwd = (EditText) chgpwdView.findViewById(R.id.oldpwd);
 		newpwd = (EditText) chgpwdView.findViewById(R.id.newpwd);
+		chgpwdView.findViewById(R.id.input3).setVisibility(View.GONE);
 		chgpwdDlg = new AlertDialog.Builder(context).setTitle("修改密码").setView(chgpwdView)
 				.setPositiveButton("修改", this).setNegativeButton("放弃", null).create();
+		chgpwdDlg.setCanceledOnTouchOutside(false);
+
+		View chgdesView = LayoutInflater.from(context).inflate(R.layout.dialog_chginfo, null);
+		newdes = (EditText) chgdesView.findViewById(R.id.newdes);
+		newdes.setHint("简介");
+		chgdesView.findViewById(R.id.input1).setVisibility(View.GONE);
+		chgdesView.findViewById(R.id.input2).setVisibility(View.GONE);
+		chgdesDlg = new AlertDialog.Builder(context).setTitle("修改简介").setView(chgdesView)
+				.setPositiveButton("修改", this).setNegativeButton("放弃", null).create();
+		chgdesDlg.setCanceledOnTouchOutside(false);
 
 		chgheadDlg = new AlertDialog.Builder(context).setTitle("头像").setPositiveButton("OK", this)
 				.setNegativeButton("CANCEL", null).create();
+
+		aboutDlg = new AlertDialog.Builder(context).setTitle("关于Enhancer")
+				.setMessage("这是一个还没有完成的软件").setPositiveButton("OK", null).create();
 	}
 
 	@Override
@@ -175,7 +189,7 @@ public class UserFragment extends Fragment
 	{
 		if (user == null)
 		{
-			if (v == loginarea || v == headimg)
+			if (v == loginarea || v == headimg || v == des)
 			{
 				Intent it = new Intent(getActivity(), LoginActivity.class);
 				startActivityForResult(it, reqCode.login.ordinal());
@@ -192,7 +206,13 @@ public class UserFragment extends Fragment
 			newpwd.setText("");
 			chgpwdDlg.show();
 		}
-
+		else if (v == des)
+		{
+			newdes.setText(user.getDescribe());
+			chgdesDlg.show();
+		}
+		else if (v == about)
+			aboutDlg.show();
 	}
 
 	@Override
@@ -209,8 +229,13 @@ public class UserFragment extends Fragment
 		}
 		else if (dialog == chgpwdDlg)
 		{
-			chginfoTask.withData(newpwd.getText().toString()).post("oldpwd", oldpwd.getText(),
-					"newpwd", newpwd.getText(), "des", user.getDescribe());
+			chginfoTask.withData(new String[] { "pwd", newpwd.getText().toString() }).post("oldpwd",
+					oldpwd.getText(), "newpwd", newpwd.getText(), "des", user.getDescribe());
+		}
+		else if (dialog == chgdesDlg)
+		{
+			chginfoTask.withData(new String[] { "des", newdes.getText().toString() }).post("oldpwd",
+					"", "newpwd", "", "des", user.getDescribe());
 		}
 		else if (dialog == chgheadDlg)
 		{
@@ -235,7 +260,14 @@ public class UserFragment extends Fragment
 		@Override
 		protected void onSuccess(String data)
 		{
-			MainActivity.user.setPwd((String) getTaskdata());
+			String[] dat = (String[]) getTaskdata();
+			if (dat[0].equals("pwd"))
+				user.setPwd(dat[1]);
+			else if (dat[0].equals("des"))
+			{
+				user.setDescribe(dat[1]);
+				des.setText(dat[1]);
+			}
 			chgpwdDlg.dismiss();
 		}
 
