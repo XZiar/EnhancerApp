@@ -16,18 +16,11 @@ public class PostAdapter extends CommonAdapter<PostBean, PostAdapter.PostHolder>
 {
 	static class PostHolder extends CommonHolder<PostBean>
 	{
-		@BindView(R.id.title)
-		private TextView title;
-		@BindView(R.id.time)
-		private TextView time;
-		@BindView(R.id.poster)
-		private TextView poster;
-		@BindView(R.id.replycount)
-		private TextView replycount;
+		@BindView
+		private TextView title, time, poster, replycount;
 		private Date sDate;
 		@SuppressLint("SimpleDateFormat")
-		private static SimpleDateFormat sdf = new SimpleDateFormat(
-				"yyyy-MM-dd");
+		private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
 		public PostHolder(View itemView)
 		{
@@ -37,7 +30,7 @@ public class PostAdapter extends CommonAdapter<PostBean, PostAdapter.PostHolder>
 		}
 
 		@Override
-		public void setData(PostBean data, int idx)
+		public void setData(PostBean data, int idx, int type)
 		{
 			title.setText(data.getTitle());
 			poster.setText(data.getPoster());

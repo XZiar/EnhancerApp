@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="FloatLabelLayout">
+
+    <declare-styleable name="CompatRecyclerView">
+        <attr name="android:divider" />
+        <attr name="useDivider" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="FloatLabelLayout">
         <attr name="android:label" />
     </declare-styleable>
     <declare-styleable name="NumberBox">

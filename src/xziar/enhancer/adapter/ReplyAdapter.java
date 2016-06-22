@@ -5,6 +5,7 @@ import java.util.Date;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.text.Html;
 import android.view.View;
 import android.widget.TextView;
 import xziar.enhancer.R;
@@ -30,15 +31,14 @@ public class ReplyAdapter extends CommonAdapter<ReplyBean, ReplyAdapter.TaskHold
 		}
 
 		@Override
-		public void setData(ReplyBean data, int idx)
+		public void setData(ReplyBean data, int idx, int type)
 		{
-			content.setText(data.getDescribe());
+			content.setText(Html.fromHtml(data.getDescribe()));
 			replyer.setText(data.getReplyer());
 			sDate.setTime(data.getTime_reply());
 			time.setText(sdf.format(sDate));
-			floor.setText(idx + "¥");
+			floor.setText((idx + 1) + "¥");
 		}
-
 	}
 
 	public ReplyAdapter(Context context)

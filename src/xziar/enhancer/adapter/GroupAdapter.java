@@ -8,17 +8,12 @@ import xziar.enhancer.pojo.GroupBean;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 
-public class GroupAdapter
-		extends CommonAdapter<GroupBean, GroupAdapter.GroupHolder>
+public class GroupAdapter extends CommonAdapter<GroupBean, GroupAdapter.GroupHolder>
 {
 	static class GroupHolder extends CommonHolder<GroupBean>
 	{
-		@BindView(R.id.name)
-		private TextView name;
-		@BindView(R.id.people)
-		private TextView people;
-		@BindView(R.id.describe)
-		private TextView describe;
+		@BindView
+		private TextView name, people, describe;
 
 		public GroupHolder(View itemView)
 		{
@@ -27,7 +22,7 @@ public class GroupAdapter
 		}
 
 		@Override
-		public void setData(GroupBean data, int idx)
+		public void setData(GroupBean data, int idx, int type)
 		{
 			name.setText(data.getName());
 			describe.setText(data.getDescribe());

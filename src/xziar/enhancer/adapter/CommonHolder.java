@@ -18,5 +18,5 @@ public abstract class CommonHolder<T> extends RecyclerView.ViewHolder
 		itemView.setTag(this);
 	}
 
-	public abstract void setData(T data, int idx);
+	public abstract void setData(T data, int idx, int type);
 }

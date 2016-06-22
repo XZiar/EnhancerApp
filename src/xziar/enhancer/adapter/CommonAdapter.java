@@ -16,18 +16,20 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 
-public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends
-		RecyclerView.Adapter<TH> implements Comparator<TD>, OnClickListener
+public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends RecyclerView.Adapter<TH>
+		implements Comparator<TD>, OnClickListener
 {
+	private static final String LogTag = "CommonAdapter";
 	private OnItemClickListener<TD> itemClick;
+	private TH header, footer;
 	protected ArrayList<Integer> resID = new ArrayList<>();
-	private Constructor<?> THcon;
+	private Constructor<TH> THcon;
 	private HashMap<TH, TD> mapping = new HashMap<>();
 	private HashMap<TD, Integer> types = new HashMap<>();
 	protected ArrayList<TD> datas = new ArrayList<>();
 	protected LayoutInflater inflater;
 
-	public CommonAdapter(Context context, Class<?> THclass)
+	public CommonAdapter(Context context, Class<TH> THclass)
 	{
 		inflater = LayoutInflater.from(context);
 		try
@@ -36,8 +38,31 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends
 		}
 		catch (NoSuchMethodException e)
 		{
-			Log.e("Adapter", e.getLocalizedMessage(), e);
+			Log.e(LogTag, "cannot load default constructor of ViewHolder:" + THclass.getName(), e);
 		}
+	}
+
+	protected TH genHolder(View view)
+	{
+		try
+		{
+			TH holder = THcon.newInstance(view);
+			return holder;
+		}
+		catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e)
+		{
+			Log.w(LogTag, "failed when create new instance of ViewHolder", e);
+			return null;
+		}
+	}
+
+	public void setHeaderFooter(View header, View footer)
+	{
+		if (header != null)
+			this.header = genHolder(header);
+		if (footer != null)
+			this.footer = genHolder(footer);
 	}
 
 	public void refresh(ArrayList<TD> datas)
@@ -50,43 +75,65 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends
 	@Override
 	public int getItemViewType(int position)
 	{
-		TD item = datas.get(position);
+		int pos = position - (header == null ? 0 : 1);
+		if (pos < 0)// header
+			return -1;
+		if (pos >= datas.size())// footer
+			return -2;
+		TD item = datas.get(pos);
 		Integer type = types.get(item);
 		return type == null ? 0 : type;
+	}
+
+	public int pos2idx(int pos)
+	{
+		pos -= (header == null ? 0 : 1);
+		if (pos >= datas.size())
+			return -2;
+		else
+			return -1;
+	}
+
+	public int idx2pos(int idx)
+	{
+		if (idx == -1 || idx < -2)
+			return 0;
+		if (idx == -2)
+			return getItemCount();
+		if (idx < datas.size())
+			return idx + (header == null ? 0 : 1);
+		else
+			return getItemCount();
 	}
 
 	@Override
 	public int getItemCount()
 	{
-		return datas.size();
+		return datas.size() + (header == null ? 0 : 1) + (footer == null ? 0 : 1);
 	}
 
 	@Override
 	public void onBindViewHolder(TH holder, int position)
 	{
-		TD item = datas.get(position);
-		mapping.put(holder, item);
-		holder.setData(item, position);
+		int pos = position - (header == null ? 0 : 1);
+		if (pos >= 0 && pos < datas.size())
+		{
+			TD item = datas.get(pos);
+			mapping.put(holder, item);
+			holder.setData(item, pos, getItemViewType(pos));
+		}
 	}
 
 	@Override
 	public TH onCreateViewHolder(ViewGroup parent, int viewType)
 	{
+		if (viewType == -1)
+			return header;
+		if (viewType == -2)
+			return footer;
 		View view = inflater.inflate(resID.get(viewType), parent, false);
 		view.setOnClickListener(this);
-		try
-		{
-			@SuppressWarnings("unchecked")
-			TH holder = (TH) THcon.newInstance(view);
-			return holder;
-		}
-		catch (InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException e)
-		{
-			e.printStackTrace();
-			return null;
-		}
-
+		return genHolder(view);
 	}
 
 	@Override

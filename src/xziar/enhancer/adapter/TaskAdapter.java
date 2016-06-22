@@ -16,18 +16,11 @@ public class TaskAdapter extends CommonAdapter<TaskBean, TaskAdapter.TaskHolder>
 {
 	static class TaskHolder extends CommonHolder<TaskBean>
 	{
-		@BindView(R.id.title)
-		private TextView title;
-		@BindView(R.id.time)
-		private TextView time;
-		@BindView(R.id.launcher)
-		private TextView launcher;
-		@BindView(R.id.applycount)
-		private TextView applycount;
+		@BindView
+		private TextView title, time, launcher, applycount;
 		private Date sDate;
 		@SuppressLint("SimpleDateFormat")
-		private static SimpleDateFormat sdf = new SimpleDateFormat(
-				"yyyy-MM-dd");
+		private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
 		public TaskHolder(View itemView)
 		{
@@ -37,7 +30,7 @@ public class TaskAdapter extends CommonAdapter<TaskBean, TaskAdapter.TaskHolder>
 		}
 
 		@Override
-		public void setData(TaskBean data, int idx)
+		public void setData(TaskBean data, int idx, int type)
 		{
 			title.setText(data.getTitle());
 			launcher.setText(data.getLauncher());

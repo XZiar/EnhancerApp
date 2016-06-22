@@ -46,18 +46,12 @@ public class UserFragment extends Fragment
 	private UserBean user;
 	private AlertDialog logoutDlg, chgpwdDlg, chgheadDlg;
 	private EditText oldpwd, newpwd;
-	@BindView(R.id.loginarea)
-	private LinearLayout loginarea;
-	@BindView(R.id.headimg)
+	@BindView
+	private LinearLayout loginarea, oparea;
+	@BindView
 	private ImageView headimg;
-	@BindView(R.id.score)
-	private NumberBox score;
-	@BindView(R.id.task_finish)
-	private NumberBox task_finish;
-	@BindView(R.id.task_ongoing)
-	private NumberBox task_ongoing;
-	@BindView(R.id.oparea)
-	private LinearLayout oparea;
+	@BindView
+	private NumberBox score, task_finish, task_ongoing;
 	@BindView(onClick = "this")
 	private TextView name, des, chgpwd, mypost, myreply;
 

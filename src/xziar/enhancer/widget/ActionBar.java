@@ -46,7 +46,7 @@ public class ActionBar extends AppBarLayout implements OnClickListener
 	private int tintColor;
 	private ArrayList<View> padLeft = new ArrayList<>(), padRight = new ArrayList<>();
 	private HashMap<ImageButton, MenuItem> btnMap = new HashMap<>();
-	@BindView()
+	@BindView
 	private LinearLayout leftBar, midBar, rightBar;
 	@BindView(R.id.toolbar)
 	private Toolbar toolbar;
