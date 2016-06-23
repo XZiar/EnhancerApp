@@ -2,6 +2,7 @@ package xziar.enhancer.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -12,13 +13,16 @@ import java.util.List;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.io.CharStreams;
 
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.util.Pair;
 import android.util.Log;
 import android.widget.Toast;
 import okhttp3.Call;
@@ -41,8 +45,9 @@ public class NetworkUtil
 {
 	static final String LogTag = "NetworkUtil";
 	private static final Context context;
-	private static final OkHttpClient client;
-	private static final Proxy proxy;
+	private static final ArrayList<Pair<HttpUrl, OkHttpClient>> profiles = new ArrayList<>();
+	private static final String[] choices;
+	private static OkHttpClient client;
 	public static HttpUrl baseUrl;
 
 	private static final CookieJar cookiejar = new CookieJar()
@@ -67,40 +72,61 @@ public class NetworkUtil
 	};
 	static
 	{
-		Builder builder = new OkHttpClient.Builder().cookieJar(cookiejar);
 		context = BaseApplication.getContext();
 		InputStream ins = context.getResources().openRawResource(R.raw.network);
-		JSONObject data = new JSONObject();
+		JSONArray servers = new JSONArray();
 		try
 		{
-			byte[] dat = new byte[ins.available()];
-			ins.read(dat, 0, ins.available());
+			String content = CharStreams.toString(new InputStreamReader(ins, "UTF-8"));
 			ins.close();
-			data = JSON.parseObject(new String(dat, "UTF-8"));
+			servers = JSON.parseArray(content);
 		}
 		catch (IOException e)
 		{
 			Log.e(LogTag, "error when open file", e);
 		}
-
-		baseUrl = new HttpUrl.Builder().scheme(data.getString("scheme"))
-				.host(data.getString("host")).port(data.getIntValue("port"))
-				.addPathSegment(data.getString("base")).build();
-		Log.d(LogTag, "baseUrl : " + baseUrl);
-
-		JSONObject JOproxy = data.getJSONObject("proxy");
-		if (JOproxy != null)
+		int size = servers.size();
+		choices = new String[size];
+		for (int a = 0; a < size; a++)
 		{
-			proxy = new Proxy(Proxy.Type.valueOf(JOproxy.getString("type")),
-					new InetSocketAddress(JOproxy.getString("host"), JOproxy.getIntValue("port")));
-			Log.d(LogTag, "proxy : " + proxy.toString());
-			builder.proxy(proxy);
+			JSONObject data = servers.getJSONObject(a);
+			choices[a] = data.getString("name");
+			Log.d(LogTag, "server " + a + " : " + choices[a]);
+			HttpUrl aUrl = new HttpUrl.Builder().scheme(data.getString("scheme"))
+					.host(data.getString("host")).port(data.getIntValue("port"))
+					.addPathSegment(data.getString("base")).build();
+			Log.d(LogTag, "baseUrl : " + aUrl);
+			Builder builder = new OkHttpClient.Builder().cookieJar(cookiejar);
+			JSONObject JOproxy = data.getJSONObject("proxy");
+			if (JOproxy != null)
+			{
+				Proxy proxy = new Proxy(Proxy.Type.valueOf(JOproxy.getString("type")),
+						new InetSocketAddress(JOproxy.getString("host"),
+								JOproxy.getIntValue("port")));
+				Log.d(LogTag, "with proxy : " + proxy.toString());
+				builder.proxy(proxy);
+			}
+			OkHttpClient aClient = builder.build();
+			profiles.add(new Pair<HttpUrl, OkHttpClient>(aUrl, aClient));
 		}
-		else
-		{
-			proxy = null;
-		}
-		client = builder.build();
+		Pair<HttpUrl, OkHttpClient> obj = profiles.get(0);
+		baseUrl = obj.first;
+		client = obj.second;
+	}
+
+	public static String[] getChoices()
+	{
+		return choices;
+	}
+
+	public static boolean chooseChoices(int idx)
+	{
+		if (idx >= profiles.size())
+			return false;
+		Pair<HttpUrl, OkHttpClient> obj = profiles.get(idx);
+		baseUrl = obj.first;
+		client = obj.second;
+		return true;
 	}
 
 	public static class NetCBHandler<D> extends Handler

@@ -71,6 +71,17 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 	}
 
 	@Override
+	protected void onDestroy()
+	{
+		super.onDestroy();
+		wrapper.release();
+		replys.clear();
+		post = null;
+		System.gc();
+		System.runFinalization();
+	}
+
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
 		switch (item.getItemId())

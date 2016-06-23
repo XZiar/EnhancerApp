@@ -63,6 +63,7 @@ public class HTMLUtil
 				HolderDrawable holder = (HolderDrawable) img.getDrawable();
 				ImageUtil.loadImage(img.getSource(), holder);
 			}
+			imgs = null;
 		}
 	}
 
@@ -103,7 +104,6 @@ public class HTMLUtil
 			{
 				isInRefresh = true;
 				view.postDelayed(this, 500);
-				Log.d(LogTag, "do refresh");
 			}
 			else
 				Log.d(LogTag, "refresh too frequent");
@@ -112,8 +112,19 @@ public class HTMLUtil
 		@Override
 		public void run()
 		{
+			Log.d(LogTag, "do refresh");
 			isInRefresh = false;
 			refreshView(ss);
+		}
+
+		public void release()
+		{
+			ss = null;
+			view.setText("");
+			view = null;
+			if (goLoadImg.isAlive())
+				goLoadImg.interrupt();
+			goLoadImg = null;
 		}
 	}
 }

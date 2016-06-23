@@ -23,6 +23,7 @@ import xziar.enhancer.activity.MainActivity;
 import xziar.enhancer.pojo.AccountBean.Role;
 import xziar.enhancer.pojo.UserBean;
 import xziar.enhancer.util.BaseApplication;
+import xziar.enhancer.util.NetworkUtil;
 import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.NetworkUtil.NetTask;
 import xziar.enhancer.util.SimpleImageUtil;
@@ -44,7 +45,7 @@ public class UserFragment extends Fragment
 	private View view;
 	private ActionBar actbar;
 	private UserBean user;
-	private AlertDialog logoutDlg, chgpwdDlg, chgdesDlg, chgheadDlg, aboutDlg;
+	private AlertDialog logoutDlg, chgpwdDlg, chgdesDlg, chgheadDlg, aboutDlg, settingDlg;
 	private EditText oldpwd, newpwd, newdes;
 	@BindView
 	private LinearLayout loginarea, oparea;
@@ -83,6 +84,16 @@ public class UserFragment extends Fragment
 
 		aboutDlg = new AlertDialog.Builder(context).setTitle("关于Enhancer")
 				.setMessage("这是一个还没有完成的软件").setPositiveButton("OK", null).create();
+
+		settingDlg = new AlertDialog.Builder(context).setTitle("设置网络目标(DEBUG)")
+				.setItems(NetworkUtil.getChoices(), new DialogInterface.OnClickListener()
+				{
+					@Override
+					public void onClick(DialogInterface dialog, int which)
+					{
+						NetworkUtil.chooseChoices(which);
+					}
+				}).create();
 	}
 
 	@Override
@@ -177,6 +188,9 @@ public class UserFragment extends Fragment
 		case R.id.action_login:
 			Intent it = new Intent(getActivity(), LoginActivity.class);
 			startActivityForResult(it, reqCode.login.ordinal());
+			break;
+		case R.id.action_setting:
+			settingDlg.show();
 			break;
 		default:
 			return super.onOptionsItemSelected(item);

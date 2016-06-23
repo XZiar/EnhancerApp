@@ -1,18 +1,21 @@
 package xziar.enhancer.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.io.ByteStreams;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.PixelFormat;
@@ -20,7 +23,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Message;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.util.Pair;
 import android.util.Log;
 import android.util.LruCache;
 import okhttp3.Call;
@@ -38,13 +40,24 @@ public class ImageUtil
 	private static final Context context;
 	private static File cacheDir;
 	private static final ImageTasker mainTasker = new ImageTasker();
-	private static final LruCache<String, Drawable> memCache;
+	private static final LruCache<String, BitmapDrawable> memCache;
+	private static final int maxPerSize;
 
 	static
 	{
 		context = BaseApplication.getContext();
-		int maxSize = (int) (Runtime.getRuntime().maxMemory() / 1024 / 8);
-		memCache = new LruCache<String, Drawable>(maxSize);
+		int maxSize = (int) (Runtime.getRuntime().maxMemory() / 8);
+		maxPerSize = maxSize / 16;
+		memCache = new LruCache<String, BitmapDrawable>(maxSize)
+		{
+			@Override
+			protected int sizeOf(String key, BitmapDrawable value)
+			{
+				Bitmap bmp = value.getBitmap();
+				return bmp.getByteCount();
+			}
+
+		};
 		cacheDir = context.getExternalCacheDir();
 		Log.d(LogTag, "ext cache dir: " + cacheDir.getAbsolutePath());
 		if (cacheDir == null || !cacheDir.exists())
@@ -54,10 +67,16 @@ public class ImageUtil
 		}
 	}
 
-	protected static void saveToCache(String md5, Drawable img)
+	protected static void saveToCache(String md5, BitmapDrawable img)
 	{
 		if (img != null)
-			memCache.put(md5, img);
+		{
+			if (img.getBitmap().getByteCount() > maxPerSize)
+				Log.d(LogTag, "too large to save in cache");
+			else
+				memCache.put(md5, img);
+		}
+		Log.d(LogTag, "save to cache: " + md5);
 	}
 
 	protected static void saveToDisk(String md5, Drawable img)
@@ -87,28 +106,17 @@ public class ImageUtil
 		}
 	}
 
-	protected static InputStream saveToDisk(String md5, InputStream ins) throws IOException
+	protected static File saveToDisk(String md5, InputStream ins) throws IOException
 	{
 		try
 		{
 			File f = new File(cacheDir, md5 + ".png");
 			FileOutputStream fos = new FileOutputStream(f);
-			BufferedInputStream bis = new BufferedInputStream(ins);
-			BufferedOutputStream bos = new BufferedOutputStream(fos);
-			final int buffer_size = 8192;
-			byte[] bytes = new byte[buffer_size];
-			while (true)
-			{
-				int count = bis.read(bytes, 0, buffer_size);
-				if (count == -1)
-					break;
-				bos.write(bytes, 0, count);
-			}
-			bis.close();
-			bos.close();
+			ByteStreams.copy(ins, fos);
+			ins.close();
 			fos.close();
 			Log.d(LogTag, "save to disk: " + md5);
-			return new FileInputStream(f);
+			return f;
 		}
 		catch (IOException e)
 		{
@@ -117,17 +125,23 @@ public class ImageUtil
 		}
 	}
 
-	protected static Drawable readFromCache(String md5)
+	protected static BitmapDrawable readFromCache(String md5)
 	{
-		return memCache.get(md5);
+		BitmapDrawable img = memCache.get(md5);
+		if (img == null)
+			Log.v(LogTag, "miss on cache: " + md5);
+		else
+			Log.d(LogTag, "load from cache: " + md5);
+		Log.w("LRU", "count : " + memCache.hitCount() + "/" + memCache.missCount());
+		return img;
 	}
 
-	protected static Drawable readFromDisk(String md5)
+	protected static BitmapDrawable readFromDisk(String md5)
 	{
 		File f = new File(cacheDir, md5 + ".png");
 		if (!f.exists())
 		{
-			Log.v(LogTag, "miss on disk");
+			Log.v(LogTag, "miss on disk: " + md5);
 			return null;
 		}
 		try
@@ -147,8 +161,13 @@ public class ImageUtil
 
 	public static void loadImage(String where, HolderDrawable object)
 	{
+		if (where == null)
+		{
+			object.setToHolder();
+			return;
+		}
 		String md5 = MD5Util.md5(where.getBytes());
-		Drawable img;
+		BitmapDrawable img;
 		img = readFromCache(md5);
 		if (img == null)
 		{
@@ -172,13 +191,13 @@ public class ImageUtil
 		}
 
 		private static final String LogTag = "HolderDrawable";
-		private static final Drawable preImg = ContextCompat.getDrawable(context,
+		public static final Drawable preImg = ContextCompat.getDrawable(context,
 				R.drawable.icon_image_holder);
 		private static final Drawable failImg = ContextCompat.getDrawable(context,
 				R.drawable.icon_image_broken);
 
 		protected Drawable obj = preImg;
-		protected OnLoadedCallback callback;
+		protected WeakReference<OnLoadedCallback> callback;
 		protected int dWidth = 0;
 		protected String md5;
 
@@ -197,7 +216,7 @@ public class ImageUtil
 
 		public void setOnLoadedCallback(OnLoadedCallback callback)
 		{
-			this.callback = callback;
+			this.callback = new WeakReference<OnLoadedCallback>(callback);
 		}
 
 		public void setToHolder()
@@ -223,8 +242,9 @@ public class ImageUtil
 			}
 			setBounds(obj.getBounds());
 			Log.v(LogTag, "set drawable. now bounds:" + getBounds().toShortString());
-			if (callback != null)
-				callback.callback(this);
+			OnLoadedCallback cb = callback.get();
+			if (cb != null)
+				cb.callback(this);
 		}
 
 		@Override
@@ -262,40 +282,39 @@ public class ImageUtil
 		}
 	}
 
-	private static class ImgNetHandler extends NetCBHandler<Pair<HolderDrawable, Drawable>>
+	private static class ImgNetHandler extends NetCBHandler<Object>
 	{
-		public ImgNetHandler(NetTask<Pair<HolderDrawable, Drawable>> callback)
+		public ImgNetHandler(NetTask<Object> callback)
 		{
 			super(callback);
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public void handleMessage(Message msg)
 		{
-			NetTask<Pair<HolderDrawable, Drawable>> callback = ref.get();
+			NetTask<Object> callback = ref.get();
 			if (callback == null)
 				return;
 			callback.onDone(msg);
 			switch (NetTask.RetCode.values()[msg.what])
 			{
 			case Timeout:
-				callback.onTimeout((Exception) ((Object[]) msg.obj)[0]);
+				callback.onTimeout((Exception) msg.obj);
 				break;
 			case Error:
 			case Fail:
-				callback.onError((Exception) ((Object[]) msg.obj)[0]);
+				callback.onError((Exception) msg.obj);
 				break;
 			case Success:
-				callback.onSuccess((Pair<HolderDrawable, Drawable>) msg.obj);
+				callback.onSuccess(msg.obj);
 				break;
 			case Unsuccess:
-				callback.onUnsuccess(msg.arg1, (String) ((Object[]) msg.obj)[0]);
+				callback.onUnsuccess(msg.arg1, (String) msg.obj);
 			}
 		}
 	}
 
-	private static class ImageTasker extends NetTask<Pair<HolderDrawable, Drawable>>
+	private static class ImageTasker extends NetTask<Object>
 	{
 		ConcurrentHashMap<Call, HolderDrawable> callMap = new ConcurrentHashMap<>();
 		ConcurrentHashMap<HolderDrawable, Call> holderMap = new ConcurrentHashMap<>();
@@ -323,56 +342,58 @@ public class ImageUtil
 			holder.md5 = md5;
 			try
 			{
-				Request request = new Request.Builder().url(url).post(emptybody).build();
+				// Request request = new Request.Builder().url(url).post(emptybody).build();
+				Request request = new Request.Builder().url(url).get().build();
+				Log.v(LogTag, request.toString());
 				call = run(request);
 				holderMap.put(holder, call);
 				callMap.put(call, holder);
 			}
 			catch (IllegalArgumentException e)
 			{
+				holder.setToFail();
 				onError(e);
 			}
 		}
 
 		@Override
-		protected Pair<HolderDrawable, Drawable> parse(Call call, ResponseBody data)
+		protected Object parse(Call call, ResponseBody data)
 				throws IOException, ParseResultFailException
 		{
-			HolderDrawable holder = callMap.get(call);
+			// clean mapping
+			HolderDrawable holder = callMap.remove(call);
 			if (holder == null)
 				throw new ParseResultFailException("cancel");
+			holderMap.remove(holder);
+
 			String md5 = holder.md5;
-			InputStream ins = saveToDisk(md5, data.byteStream());
-			Drawable img = new BitmapDrawable(context.getResources(), ins);
-			ins.close();
+			int dW = holder.dWidth;
+			File file = saveToDisk(md5, data.byteStream());
+			Options opt = new Options();
+			opt.inJustDecodeBounds = true;
+			Bitmap bmp = BitmapFactory.decodeFile(file.getAbsolutePath(), opt);
+			opt.inJustDecodeBounds = false;
+			opt.inSampleSize = Math.max(1, opt.outWidth / dW);
+			bmp = BitmapFactory.decodeFile(file.getAbsolutePath(), opt);
+			BitmapDrawable img = new BitmapDrawable(context.getResources(), bmp);
+			bmp = null;
 			saveToCache(md5, img);
-			return new Pair<>(holder, img);
+			holder.setDrawable(img);
+
+			holder = null;
+			img = null;
+			return true;
 		}
 
 		@Override
 		protected void onDoneBG(Call call, Message msg)
 		{
 			HolderDrawable holder = callMap.remove(call);
-			if (holder != null)
-				holderMap.remove(holder);
-			if (msg.what != RetCode.Success.ordinal())
-				msg.obj = new Object[] { msg.obj, holder };
-		}
-
-		@Override
-		protected void onDone(Message msg)
-		{
-			if (msg.what != RetCode.Success.ordinal())
+			if (holder != null)// must not be successful
 			{
-				HolderDrawable holder = (HolderDrawable) ((Object[]) msg.obj)[1];
+				holderMap.remove(holder);
 				holder.setToFail();
 			}
-		}
-
-		@Override
-		protected void onSuccess(Pair<HolderDrawable, Drawable> data)
-		{
-			data.first.setDrawable(data.second);
 		}
 
 	};
