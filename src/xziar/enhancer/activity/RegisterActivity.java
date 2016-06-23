@@ -3,6 +3,7 @@ package xziar.enhancer.activity;
 import java.util.HashMap;
 
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -107,7 +108,7 @@ public class RegisterActivity extends AppCompatActivity implements OnClickListen
 		}
 
 		@Override
-		protected void onDone()
+		protected void onDone(Message msg)
 		{
 			waitDialog.dismiss();
 		}

@@ -105,7 +105,7 @@ public class NetworkUtil
 
 	public static class NetCBHandler<D> extends Handler
 	{
-		private WeakReference<NetTask<D>> ref;
+		protected WeakReference<NetTask<D>> ref;
 
 		public NetCBHandler(NetTask<D> callback)
 		{
@@ -120,7 +120,7 @@ public class NetworkUtil
 			NetTask<D> callback = ref.get();
 			if (callback == null)
 				return;
-			callback.onDone();
+			callback.onDone(msg);
 			switch (NetTask.RetCode.values()[msg.what])
 			{
 			case Timeout:
@@ -170,11 +170,16 @@ public class NetworkUtil
 		protected boolean isRunning;
 		protected Object taskdata;
 
+		protected NetTask(boolean isSingleton)
+		{
+			this.isSingleton = isSingleton;
+		}
+
 		public NetTask(String addr, boolean isSingleton)
 		{
+			this(isSingleton);
 			handler = new NetCBHandler<D>(this);
 			url = baseUrl + addr;
-			this.isSingleton = isSingleton;
 		}
 
 		public NetTask(String addr)
@@ -237,8 +242,7 @@ public class NetworkUtil
 				}
 			}
 			RequestBody formBody = fbBuilder.build();
-			Request request = new Request.Builder().url(url).post(formBody).build();
-			run(request);
+			run(genPostRequest(formBody));
 		};
 
 		/**
@@ -257,8 +261,7 @@ public class NetworkUtil
 				fbBuilder.add(e.getKey(), val);
 			}
 			RequestBody formBody = fbBuilder.build();
-			Request request = new Request.Builder().url(url).post(formBody).build();
-			run(request);
+			run(genPostRequest(formBody));
 		}
 
 		/**
@@ -280,6 +283,20 @@ public class NetworkUtil
 			post(form);
 		}
 
+		protected Request genPostRequest(RequestBody body)
+		{
+			try
+			{
+				Request request = new Request.Builder().url(url).post(body).build();
+				return request;
+			}
+			catch (IllegalArgumentException e)
+			{
+				Log.w(LogTag, "error when gen url", e);
+				return null;
+			}
+		}
+
 		public void get()
 		{
 		}
@@ -289,9 +306,9 @@ public class NetworkUtil
 			if (isSingleton && isRunning)
 				return null;
 			isRunning = true;
+			onStart();
 			Call call = client.newCall(request);
 			call.enqueue(this);
-			onStart();
 			return call;
 		}
 
@@ -309,7 +326,7 @@ public class NetworkUtil
 				msg.what = RetCode.Error.ordinal();
 			}
 			msg.obj = e;
-			onDoneBG(call, false);
+			onDoneBG(call, msg);
 			msg.sendToTarget();
 			isRunning = false;
 		}
@@ -344,7 +361,7 @@ public class NetworkUtil
 				msg.arg1 = response.code();
 				msg.obj = e.getMsg();
 			}
-			onDoneBG(call, msg.what == RetCode.Success.ordinal());
+			onDoneBG(call, msg);
 			msg.sendToTarget();
 			isRunning = false;
 		};
@@ -382,8 +399,11 @@ public class NetworkUtil
 		/**
 		 * work to be done before invoke callback
 		 * runs on MainThread
+		 * 
+		 * @param msg
+		 *            the original message to be sent(last change to change message)
 		 */
-		protected void onDone()
+		protected void onDone(Message msg)
 		{
 		};
 
@@ -393,10 +413,10 @@ public class NetworkUtil
 		 * 
 		 * @param call
 		 *            the specific call
-		 * @param isSuccess
-		 *            whether the call is successed
+		 * @param msg
+		 *            the original message to be sent(a change to change message)
 		 */
-		protected void onDoneBG(Call call, boolean isSuccess)
+		protected void onDoneBG(Call call, Message msg)
 		{
 		};
 

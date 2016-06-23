@@ -6,6 +6,7 @@ import java.util.List;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.widget.RecyclerView;
@@ -156,7 +157,7 @@ public class TaskListFragment extends Fragment
 			TaskBean.class)
 	{
 		@Override
-		protected void onDone()
+		protected void onDone(Message msg)
 		{
 			listwrap.setRefreshing(false);
 		}

@@ -2,6 +2,7 @@ package xziar.enhancer.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
@@ -71,7 +72,7 @@ public class AddPostActivity extends AppCompatActivity implements OnClickListene
 		}
 
 		@Override
-		protected void onDone()
+		protected void onDone(Message msg)
 		{
 			waitDialog.dismiss();
 		}

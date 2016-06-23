@@ -1,6 +1,7 @@
 package xziar.enhancer.util;
 
 import android.graphics.drawable.Drawable;
+import android.os.Process;
 import android.text.Html;
 import android.text.Html.ImageGetter;
 import android.text.SpannableString;
@@ -17,6 +18,12 @@ public class HTMLUtil
 	public static class ImgGetter implements ImageGetter
 	{
 		private int dWidth = 0;
+		private HTMLwrapper wrapper;
+
+		public ImgGetter(HTMLwrapper wrapper)
+		{
+			this.wrapper = wrapper;
+		}
 
 		void setDesireWidth(int width)
 		{
@@ -26,20 +33,52 @@ public class HTMLUtil
 		@Override
 		public Drawable getDrawable(String source)
 		{
-			return new HolderDrawable(dWidth);
+			HolderDrawable holder = new HolderDrawable(dWidth);
+			holder.setOnLoadedCallback(wrapper);
+			return holder;
 		}
 	}
 
-	public static class HTMLwrapper implements OnLoadedCallback
+	private static class ImageLoader implements Runnable
+	{
+		private HTMLwrapper wrapper;
+
+		public ImageLoader(HTMLwrapper wrapper)
+		{
+			this.wrapper = wrapper;
+		}
+
+		@Override
+		public void run()
+		{
+			Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+			ImageSpan[] imgs = wrapper.ss.getSpans(0, wrapper.ss.length(), ImageSpan.class);
+			for (final ImageSpan img : imgs)
+			{
+				if (Thread.interrupted())
+				{
+					Log.d(LogTag, "re-launch load image");
+					return;
+				}
+				HolderDrawable holder = (HolderDrawable) img.getDrawable();
+				ImageUtil.loadImage(img.getSource(), holder);
+			}
+		}
+	}
+
+	public static class HTMLwrapper implements OnLoadedCallback, Runnable
 	{
 		private ImgGetter getter;
 		private SpannableString ss;
 		private TextView view;
+		private Thread goLoadImg;
+		private boolean isInRefresh = false;
 
 		public HTMLwrapper(TextView view)
 		{
 			this.view = view;
-			getter = new ImgGetter();
+			getter = new ImgGetter(this);
+			goLoadImg = new Thread(new ImageLoader(this));
 		}
 
 		protected void refreshView(SpannableString nss)
@@ -51,30 +90,29 @@ public class HTMLUtil
 		{
 			getter.setDesireWidth(view.getWidth());
 			ss = new SpannableString(Html.fromHtml(html, getter, null));
-			ImageSpan[] imgs = ss.getSpans(0, ss.length(), ImageSpan.class);
-			for (final ImageSpan img : imgs)
-			{
-				Log.v(LogTag, "imgspan:" + img.getSource() + " ==> " + img.getDrawable());
-				HolderDrawable holder = (HolderDrawable) img.getDrawable();
-				holder.setOnLoadedCallback(this);
-				ImageUtil.loadImage(img.getSource(), holder);
-				// new Handler().postDelayed(new Runnable()
-				// {
-				// @Override
-				// public void run()
-				// {
-				// Drawable d = ContextCompat.getDrawable(BaseApplication.getContext(),
-				// R.drawable.slogon);
-				// ((HolderDrawable) img.getDrawable()).setDrawable(d);
-				// }
-				// }, 2000);
-			}
+			if (goLoadImg.isAlive())
+				goLoadImg.interrupt();
+			goLoadImg.start();
 			refreshView(ss);
 		}
 
 		@Override
 		public void callback(HolderDrawable holder)
 		{
+			if (!isInRefresh)
+			{
+				isInRefresh = true;
+				view.postDelayed(this, 500);
+				Log.d(LogTag, "do refresh");
+			}
+			else
+				Log.d(LogTag, "refresh too frequent");
+		}
+
+		@Override
+		public void run()
+		{
+			isInRefresh = false;
 			refreshView(ss);
 		}
 	}

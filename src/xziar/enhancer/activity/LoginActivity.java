@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -105,7 +106,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 		}
 
 		@Override
-		protected void onDone()
+		protected void onDone(Message msg)
 		{
 			waitDialog.dismiss();
 		}

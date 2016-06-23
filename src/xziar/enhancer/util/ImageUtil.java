@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Message;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
 import android.util.Log;
@@ -19,6 +20,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import xziar.enhancer.R;
+import xziar.enhancer.util.NetworkUtil.NetCBHandler;
 import xziar.enhancer.util.NetworkUtil.NetTask;
 
 public class ImageUtil
@@ -40,24 +42,23 @@ public class ImageUtil
 		private static final String LogTag = "HolderDrawable";
 		private static final Drawable preImg = ContextCompat.getDrawable(context,
 				R.drawable.icon_image_holder);
-		protected Drawable obj;
+		private static final Drawable failImg = ContextCompat.getDrawable(context,
+				R.drawable.icon_image_broken);
+
+		protected Drawable obj = preImg;
 		protected OnLoadedCallback callback;
 		protected int dWidth = 0;
 
 		static
 		{
 			preImg.setBounds(0, 0, preImg.getIntrinsicWidth(), preImg.getIntrinsicHeight());
+			failImg.setBounds(0, 0, failImg.getIntrinsicWidth(), failImg.getIntrinsicHeight());
 		}
 
 		public HolderDrawable(int dWidth)
 		{
-			this();
-			this.dWidth = dWidth;
-		}
-
-		public HolderDrawable()
-		{
 			super();
+			this.dWidth = dWidth;
 			setBounds(preImg.getBounds());
 		}
 
@@ -66,23 +67,28 @@ public class ImageUtil
 			this.callback = callback;
 		}
 
+		public void setToHolder()
+		{
+			setDrawable(preImg);
+		}
+
+		public void setToFail()
+		{
+			setDrawable(failImg);
+		}
+
 		public void setDrawable(Drawable img)
 		{
-			obj = img;
-			if (obj == null)
-				setBounds(preImg.getBounds());
-			else
+			obj = (img == null ? preImg : img);
+			if (obj.getBounds().width() <= 0)
 			{
-				if (img.getBounds().width() <= 0)
-				{
-					int rw = img.getIntrinsicWidth(), rh = img.getIntrinsicHeight();
-					if (dWidth == 0)
-						img.setBounds(0, 0, rw, rh);
-					else
-						img.setBounds(0, 0, dWidth, rh * dWidth / rw);
-				}
-				setBounds(img.getBounds());
+				int rw = obj.getIntrinsicWidth(), rh = obj.getIntrinsicHeight();
+				if (dWidth == 0)
+					obj.setBounds(0, 0, rw, rh);
+				else
+					obj.setBounds(0, 0, dWidth, rh * dWidth / rw);
 			}
+			setBounds(obj.getBounds());
 			Log.v(LogTag, "set drawable. now bounds:" + getBounds().toShortString());
 			if (callback != null)
 				callback.callback(this);
@@ -91,11 +97,7 @@ public class ImageUtil
 		@Override
 		public void draw(Canvas canvas)
 		{
-			Log.v(LogTag, "request a draw, bounds=" + getBounds().toShortString() + " ,obj=" + obj);
-			if (obj != null)
-				obj.draw(canvas);
-			else
-				preImg.draw(canvas);
+			obj.draw(canvas);
 		}
 
 		@Override
@@ -129,11 +131,43 @@ public class ImageUtil
 
 	public static void loadImage(String where, HolderDrawable object)
 	{
-		Log.v(LogTag, "loadImage from " + where + " into " + object);
 		mainTasker.tryGetPic(object, where);
 	}
 
 	private static ImageTasker mainTasker = new ImageTasker();
+
+	private static class ImgNetHandler extends NetCBHandler<Pair<HolderDrawable, Drawable>>
+	{
+		public ImgNetHandler(NetTask<Pair<HolderDrawable, Drawable>> callback)
+		{
+			super(callback);
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void handleMessage(Message msg)
+		{
+			NetTask<Pair<HolderDrawable, Drawable>> callback = ref.get();
+			if (callback == null)
+				return;
+			callback.onDone(msg);
+			switch (NetTask.RetCode.values()[msg.what])
+			{
+			case Timeout:
+				callback.onTimeout((Exception) ((Object[]) msg.obj)[0]);
+				break;
+			case Error:
+			case Fail:
+				callback.onError((Exception) ((Object[]) msg.obj)[0]);
+				break;
+			case Success:
+				callback.onSuccess((Pair<HolderDrawable, Drawable>) msg.obj);
+				break;
+			case Unsuccess:
+				callback.onUnsuccess(msg.arg1, (String) ((Object[]) msg.obj)[0]);
+			}
+		}
+	}
 
 	private static class ImageTasker extends NetTask<Pair<HolderDrawable, Drawable>>
 	{
@@ -143,7 +177,8 @@ public class ImageUtil
 
 		public ImageTasker()
 		{
-			super("", false);
+			super(false);
+			handler = new ImgNetHandler(this);
 		}
 
 		public void tryGetPic(HolderDrawable holder, String obj)
@@ -151,12 +186,17 @@ public class ImageUtil
 			Call call = holderMap.get(holder);
 			if (call != null)// invalidate oldcall
 				taskMap.remove(call);
-
-			Request request = new Request.Builder().url(obj).post(emptybody).build();
-
-			call = run(request);
-			holderMap.put(holder, call);
-			taskMap.put(call, holder);
+			try
+			{
+				Request request = new Request.Builder().url(obj).post(emptybody).build();
+				call = run(request);
+				holderMap.put(holder, call);
+				taskMap.put(call, holder);
+			}
+			catch (IllegalArgumentException e)
+			{
+				onError(e);
+			}
 		}
 
 		@Override
@@ -172,11 +212,23 @@ public class ImageUtil
 		}
 
 		@Override
-		protected void onDoneBG(Call call, boolean isSuccess)
+		protected void onDoneBG(Call call, Message msg)
 		{
 			HolderDrawable holder = taskMap.remove(call);
 			if (holder != null)
 				holderMap.remove(holder);
+			if (msg.what != RetCode.Success.ordinal())
+				msg.obj = new Object[] { msg.obj, holder };
+		}
+
+		@Override
+		protected void onDone(Message msg)
+		{
+			if (msg.what != RetCode.Success.ordinal())
+			{
+				HolderDrawable holder = (HolderDrawable) ((Object[]) msg.obj)[1];
+				holder.setToFail();
+			}
 		}
 
 		@Override
