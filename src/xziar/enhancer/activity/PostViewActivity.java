@@ -6,7 +6,6 @@ import java.util.List;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -16,6 +15,7 @@ import xziar.enhancer.R;
 import xziar.enhancer.adapter.ReplyAdapter;
 import xziar.enhancer.pojo.PostBean;
 import xziar.enhancer.pojo.ReplyBean;
+import xziar.enhancer.util.HTMLUtil.HTMLwrapper;
 import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.NetworkUtil.NetBeansTask;
 import xziar.enhancer.util.ViewInject;
@@ -35,6 +35,7 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 	private PostBean post;
 	private ReplyAdapter adapter;
 	private ArrayList<ReplyBean> replys = new ArrayList<>();
+	HTMLwrapper wrapper;
 	@BindView
 	private FloatLabelLayout replypart;
 	@BindView(onClick = "this")
@@ -54,6 +55,7 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_post_view);
 		ViewInject.inject(this);
+		wrapper = new HTMLwrapper(describe);
 		actbar.setupActionBar(this);
 		actbar.setTitle("话题");
 		actbar.setSubtitle("发起人");
@@ -128,8 +130,7 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 		protected void onSuccess(final PostBean data)
 		{
 			post = data;
-			String txt = post.getDescribe();
-			describe.setText(Html.fromHtml(txt));
+			wrapper.showHTML(post.getDescribe());
 			actbar.setTitle(post.getTitle());
 			actbar.setSubtitle(post.getPoster());
 		}

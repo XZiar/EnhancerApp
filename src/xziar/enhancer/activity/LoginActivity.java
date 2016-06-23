@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import okhttp3.Call;
 import okhttp3.ResponseBody;
 import xziar.enhancer.R;
 import xziar.enhancer.pojo.AccountBean;
@@ -74,7 +75,8 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener
 	private NetTask<UserBean> loginTask = new NetTask<UserBean>("/app/login", true)
 	{
 		@Override
-		protected UserBean parse(ResponseBody data) throws IOException, ParseResultFailException
+		protected UserBean parse(Call call, ResponseBody data)
+				throws IOException, ParseResultFailException
 		{
 			JSONObject obj = JSON.parseObject(data.string());
 			String msg = obj.getString("msg");

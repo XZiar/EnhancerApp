@@ -124,7 +124,7 @@ public class NetworkUtil
 			switch (NetTask.RetCode.values()[msg.what])
 			{
 			case Timeout:
-				callback.onTimeout();
+				callback.onTimeout((Exception) msg.obj);
 				break;
 			case Error:
 			case Fail:
@@ -284,13 +284,15 @@ public class NetworkUtil
 		{
 		}
 
-		protected final void run(Request request)
+		protected final Call run(Request request)
 		{
 			if (isSingleton && isRunning)
-				return;
+				return null;
 			isRunning = true;
-			client.newCall(request).enqueue(this);
+			Call call = client.newCall(request);
+			call.enqueue(this);
 			onStart();
+			return call;
 		}
 
 		@Override
@@ -305,8 +307,9 @@ public class NetworkUtil
 			else
 			{
 				msg.what = RetCode.Error.ordinal();
-				msg.obj = e;
 			}
+			msg.obj = e;
+			onDoneBG(call, false);
 			msg.sendToTarget();
 			isRunning = false;
 		}
@@ -321,7 +324,7 @@ public class NetworkUtil
 				if (response.isSuccessful())
 				{
 					msg.what = RetCode.Success.ordinal();
-					msg.obj = parse(data);
+					msg.obj = parse(call, data);
 				}
 				else
 				{
@@ -341,6 +344,7 @@ public class NetworkUtil
 				msg.arg1 = response.code();
 				msg.obj = e.getMsg();
 			}
+			onDoneBG(call, msg.what == RetCode.Success.ordinal());
 			msg.sendToTarget();
 			isRunning = false;
 		};
@@ -348,6 +352,8 @@ public class NetworkUtil
 		/**
 		 * parser that translates respnse to demanding data
 		 * 
+		 * @param call
+		 *            the specific call
 		 * @param data
 		 *            response body
 		 * @return
@@ -360,7 +366,7 @@ public class NetworkUtil
 		 *             body does not meets demand
 		 */
 		@SuppressWarnings("unchecked")
-		protected D parse(ResponseBody data) throws IOException, ParseResultFailException
+		protected D parse(Call call, ResponseBody data) throws IOException, ParseResultFailException
 		{
 			return (D) data.string();
 		};
@@ -382,9 +388,25 @@ public class NetworkUtil
 		};
 
 		/**
-		 * callback when connection timeout
+		 * work to be done before send message to MainThread Hadler
+		 * runs on BGThread
+		 * 
+		 * @param call
+		 *            the specific call
+		 * @param isSuccess
+		 *            whether the call is successed
 		 */
-		protected void onTimeout()
+		protected void onDoneBG(Call call, boolean isSuccess)
+		{
+		};
+
+		/**
+		 * callback when connection timeout
+		 * 
+		 * @param e
+		 *            original exception throwed by connection
+		 */
+		protected void onTimeout(Exception e)
 		{
 			Log.w(LogTag, "HTTP timeout");
 			onFail();
@@ -445,7 +467,7 @@ public class NetworkUtil
 		}
 
 		@Override
-		protected D parse(ResponseBody data) throws IOException, ParseResultFailException
+		protected D parse(Call call, ResponseBody data) throws IOException, ParseResultFailException
 		{
 			try
 			{
@@ -480,7 +502,8 @@ public class NetworkUtil
 		}
 
 		@Override
-		protected List<D> parse(ResponseBody data) throws IOException, ParseResultFailException
+		protected List<D> parse(Call call, ResponseBody data)
+				throws IOException, ParseResultFailException
 		{
 			try
 			{
