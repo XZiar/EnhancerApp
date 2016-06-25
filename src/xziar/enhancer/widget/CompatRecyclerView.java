@@ -13,23 +13,28 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 import xziar.enhancer.R;
 import xziar.enhancer.adapter.CommonAdapter;
 
 public class CompatRecyclerView extends RecyclerView
 {
 	private static final String LogTag = "CompatRecyclerView";
-	private final ArrayList<View> tmpView = new ArrayList<>();
+	private final ArrayList<View> headers = new ArrayList<>(), footers = new ArrayList<>();
 	private RecyclerScrollHelper scrollHelper = new RecyclerScrollHelper();
 	private Context context;
+	private boolean isHeader = true;
 
 	public CompatRecyclerView(Context context, AttributeSet attrs, int defStyleAttr)
 	{
 		super(context, attrs, defStyleAttr);
 		this.context = context;
-		setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
+
 		TypedArray ta = context.getTheme().obtainStyledAttributes(attrs,
 				R.styleable.CompatRecyclerView, defStyleAttr, 0);
+		int ori = ta.getInt(R.styleable.CompatRecyclerView_android_orientation,
+				LinearLayout.VERTICAL);
+		setLayoutManager(new LinearLayoutManager(context, ori, false));
 		if (ta.getBoolean(R.styleable.CompatRecyclerView_useDivider, true))
 		{
 			int rid = ta.getResourceId(R.styleable.CompatRecyclerView_android_divider,
@@ -53,13 +58,21 @@ public class CompatRecyclerView extends RecyclerView
 	@Override
 	public void addView(View child, int index, android.view.ViewGroup.LayoutParams params)
 	{
-		if (this.getAdapter() != null)
+		if (getAdapter() != null)
 			super.addView(child, index, params);
 		else
 		{
-			Log.v(LogTag, "add:" + child + " at " + index + " with " + params);
+			if (child instanceof EmptyDividerView)
+			{
+				isHeader = false;
+				return;
+			}
+			Log.v(LogTag, "add " + (isHeader ? "Header" : "Footer") + " : " + child);
 			child.setLayoutParams(params);
-			tmpView.add(child);
+			if (isHeader)
+				headers.add(child);
+			else
+				footers.add(child);
 		}
 	}
 
@@ -67,7 +80,13 @@ public class CompatRecyclerView extends RecyclerView
 	{
 		if (id == this.getId())
 			return this;
-		for (View v : tmpView)
+		for (View v : headers)
+		{
+			View res = v.findViewById(id);
+			if (res != null)
+				return res;
+		}
+		for (View v : footers)
 		{
 			View res = v.findViewById(id);
 			if (res != null)
@@ -106,17 +125,13 @@ public class CompatRecyclerView extends RecyclerView
 		}
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void setAdapter(Adapter adapter)
 	{
 		super.setAdapter(adapter);
 		if (adapter instanceof CommonAdapter)
-		{
-			View header = tmpView.size() > 0 ? tmpView.get(0) : null;
-			View footer = tmpView.size() > 1 ? tmpView.get(1) : null;
-			((CommonAdapter) adapter).setHeaderFooter(header, footer);
-		}
+			((CommonAdapter) adapter).setHeaderFooter(headers, footers);
 	}
 }
 

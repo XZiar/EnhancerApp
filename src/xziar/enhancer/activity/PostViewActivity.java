@@ -12,12 +12,13 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 import xziar.enhancer.R;
+import xziar.enhancer.adapter.ImageAdapter;
 import xziar.enhancer.adapter.ReplyAdapter;
 import xziar.enhancer.pojo.PostBean;
 import xziar.enhancer.pojo.ReplyBean;
-import xziar.enhancer.util.HTMLUtil.HTMLwrapper;
 import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.NetworkUtil.NetBeansTask;
+import xziar.enhancer.util.RichTextUtil.RTwrapper;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.widget.ActionBar;
@@ -34,8 +35,9 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 
 	private PostBean post;
 	private ReplyAdapter adapter;
+	private ImageAdapter imgadapter;
 	private ArrayList<ReplyBean> replys = new ArrayList<>();
-	HTMLwrapper wrapper;
+	RTwrapper wrapper;
 	@BindView
 	private FloatLabelLayout replypart;
 	@BindView(onClick = "this")
@@ -46,8 +48,8 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 	private TextView describe;
 	@BindView(R.id.actbar)
 	private ActionBar actbar;
-	@BindView(R.id.comments)
-	private CompatRecyclerView comments;
+	@BindView
+	private CompatRecyclerView comments, images;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -55,7 +57,6 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_post_view);
 		ViewInject.inject(this);
-		wrapper = new HTMLwrapper(describe);
 		actbar.setupActionBar(this);
 		actbar.setTitle("话题");
 		actbar.setSubtitle("发起人");
@@ -63,7 +64,10 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 		actbar.setBackButton(true);
 
 		adapter = new ReplyAdapter(this);
+		imgadapter = new ImageAdapter(this);
 		comments.setAdapter(adapter);
+		images.setAdapter(imgadapter);
+		wrapper = new RTwrapper(describe, imgadapter);
 		refreshView();
 		int pid = getIntent().getIntExtra("pid", -1);
 		viewTask.post("pid", pid);

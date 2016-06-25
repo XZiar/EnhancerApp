@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
-import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 
 import android.content.Context;
@@ -17,14 +19,15 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
 import android.graphics.Canvas;
-import android.graphics.ColorFilter;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Message;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.Pair;
 import android.util.Log;
 import android.util.LruCache;
+import android.widget.ImageView;
 import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.Request;
@@ -159,69 +162,73 @@ public class ImageUtil
 		return null;
 	}
 
-	public static void loadImage(String where, HolderDrawable object)
+	protected static BitmapDrawable fetchImage(String md5)
+	{
+		BitmapDrawable img = readFromCache(md5);
+		if (img == null)
+		{
+			img = readFromDisk(md5);
+			if (img != null)
+			{
+				saveToCache(md5, img);
+			}
+		}
+		return img;
+	}
+
+	public static void loadImage(String where, ImgHolder object)
 	{
 		if (where == null)
 		{
 			object.setToHolder();
 			return;
 		}
-		String md5 = MD5Util.md5(where.getBytes());
 		BitmapDrawable img;
-		img = readFromCache(md5);
+		img = readFromCache(object.md5);
 		if (img == null)
 		{
-			img = readFromDisk(md5);
+			img = readFromDisk(object.md5);
 			if (img != null)
-				saveToCache(md5, img);
+				saveToCache(object.md5, img);
 			else
 			{
-				mainTasker.downloadPic(object, where, md5);
+				mainTasker.downloadPic(object, where);
 				return;
 			}
 		}
 		object.setDrawable(img);
 	}
 
-	public static class HolderDrawable extends Drawable
+	public static interface OnLoadedCallback
 	{
-		public interface OnLoadedCallback
-		{
-			public void callback(HolderDrawable holder);
-		}
+		public void callback(ImgHolder holder, Drawable img);
+	}
 
+	public static class ImgHolder
+	{
 		private static final String LogTag = "HolderDrawable";
 		public static final Drawable preImg = ContextCompat.getDrawable(context,
 				R.drawable.icon_image_holder);
 		private static final Drawable failImg = ContextCompat.getDrawable(context,
 				R.drawable.icon_image_broken);
+		private static final Drawable tipImg = ContextCompat.getDrawable(context,
+				R.drawable.icon_setting);
 
-		protected Drawable obj = preImg;
 		protected WeakReference<OnLoadedCallback> callback;
+
 		protected int dWidth = 0;
-		protected String md5;
+		public String md5, url;
 
 		static
 		{
 			preImg.setBounds(0, 0, preImg.getIntrinsicWidth(), preImg.getIntrinsicHeight());
 			failImg.setBounds(0, 0, failImg.getIntrinsicWidth(), failImg.getIntrinsicHeight());
+			tipImg.setBounds(0, 0, tipImg.getIntrinsicWidth(), tipImg.getIntrinsicHeight());
 		}
 
-		public HolderDrawable(int dWidth)
+		public ImgHolder()
 		{
-			super();
-			this.dWidth = dWidth;
-			setBounds(preImg.getBounds());
-		}
-
-		public void setOnLoadedCallback(OnLoadedCallback callback)
-		{
-			this.callback = new WeakReference<OnLoadedCallback>(callback);
-		}
-
-		public void setToHolder()
-		{
-			setDrawable(preImg);
+			callback = new WeakReference<OnLoadedCallback>(null);
 		}
 
 		public void setToFail()
@@ -229,62 +236,53 @@ public class ImageUtil
 			setDrawable(failImg);
 		}
 
+		public void setToHolder()
+		{
+			setDrawable(preImg);
+		}
+
 		public void setDrawable(Drawable img)
 		{
-			obj = (img == null ? preImg : img);
-			if (obj.getBounds().width() <= 0)
+			if (callback.get() != null)
 			{
-				int rw = obj.getIntrinsicWidth(), rh = obj.getIntrinsicHeight();
-				if (dWidth == 0)
-					obj.setBounds(0, 0, rw, rh);
-				else
-					obj.setBounds(0, 0, dWidth, rh * dWidth / rw);
+				callback.get().callback(this, img);
 			}
-			setBounds(obj.getBounds());
-			Log.v(LogTag, "set drawable. now bounds:" + getBounds().toShortString());
-			OnLoadedCallback cb = callback.get();
-			if (cb != null)
-				cb.callback(this);
+		}
+
+		public void setOnLoadedCallback(OnLoadedCallback callback)
+		{
+			this.callback = new WeakReference<OnLoadedCallback>(callback);
+		}
+
+	}
+
+	public static class ImgViewHolder extends ImgHolder implements OnLoadedCallback
+	{
+		protected ImageView view;
+
+		public ImgViewHolder(ImageView view)
+		{
+			super();
+			this.view = view;
+			this.dWidth = view.getMaxWidth();
+		}
+
+		public void getDrawable(ImgHolder obj)
+		{
+			md5 = obj.md5;
+			ImageUtil.loadImage(obj.url, this);
 		}
 
 		@Override
-		public void draw(Canvas canvas)
+		public void callback(ImgHolder holder, Drawable img)
 		{
-			obj.draw(canvas);
-		}
-
-		@Override
-		public int getIntrinsicWidth()
-		{
-			return getBounds().width();
-		}
-
-		@Override
-		public int getIntrinsicHeight()
-		{
-			return getBounds().height();
-		}
-
-		@Override
-		public void setAlpha(int alpha)
-		{
-		}
-
-		@Override
-		public void setColorFilter(ColorFilter colorFilter)
-		{
-		}
-
-		@Override
-		public int getOpacity()
-		{
-			return 0;
+			view.setImageDrawable(img);
 		}
 	}
 
-	private static class ImgNetHandler extends NetCBHandler<Object>
+	private static class ImgNetHandler extends NetCBHandler<Pair<ImgHolder, Drawable>>
 	{
-		public ImgNetHandler(NetTask<Object> callback)
+		public ImgNetHandler(NetTask<Pair<ImgHolder, Drawable>> callback)
 		{
 			super(callback);
 		}
@@ -292,38 +290,23 @@ public class ImageUtil
 		@Override
 		public void handleMessage(Message msg)
 		{
-			NetTask<Object> callback = ref.get();
+			NetTask<Pair<ImgHolder, Drawable>> callback = ref.get();
 			if (callback == null)
 				return;
-			callback.onDone(msg);
-			switch (NetTask.RetCode.values()[msg.what])
-			{
-			case Timeout:
-				callback.onTimeout((Exception) msg.obj);
-				break;
-			case Error:
-			case Fail:
-				callback.onError((Exception) msg.obj);
-				break;
-			case Success:
-				callback.onSuccess(msg.obj);
-				break;
-			case Unsuccess:
-				callback.onUnsuccess(msg.arg1, (String) msg.obj);
-			}
+			callback.onDone(msg);// let onDone handle judgement
 		}
 	}
 
-	private static class ImageTasker extends NetTask<Object>
+	private static class ImageTasker extends NetTask<Pair<ImgHolder, Drawable>>
 	{
-		ConcurrentHashMap<Call, HolderDrawable> callMap = new ConcurrentHashMap<>();
-		ConcurrentHashMap<HolderDrawable, Call> holderMap = new ConcurrentHashMap<>();
+		BiMap<Call, ImgHolder> taskMap;
 		private static RequestBody emptybody = new FormBody.Builder().build();
 
 		public ImageTasker()
 		{
 			super(false);
 			handler = new ImgNetHandler(this);
+			taskMap = Maps.synchronizedBiMap(HashBiMap.<Call, ImgHolder> create());
 		}
 
 		/**
@@ -334,20 +317,16 @@ public class ImageUtil
 		 * @param url
 		 *            url where image exists
 		 */
-		public void downloadPic(HolderDrawable holder, String url, String md5)
+		public void downloadPic(ImgHolder holder, String url)
 		{
-			Call call = holderMap.get(holder);
-			if (call != null)// invalidate oldcall
-				callMap.remove(call);
-			holder.md5 = md5;
+			taskMap.inverse().remove(holder);// invalidate oldcall
 			try
 			{
 				// Request request = new Request.Builder().url(url).post(emptybody).build();
 				Request request = new Request.Builder().url(url).get().build();
 				Log.v(LogTag, request.toString());
-				call = run(request);
-				holderMap.put(holder, call);
-				callMap.put(call, holder);
+				Call call = run(request);
+				taskMap.put(call, holder);
 			}
 			catch (IllegalArgumentException e)
 			{
@@ -357,14 +336,13 @@ public class ImageUtil
 		}
 
 		@Override
-		protected Object parse(Call call, ResponseBody data)
+		protected Pair<ImgHolder, Drawable> parse(Call call, ResponseBody data)
 				throws IOException, ParseResultFailException
 		{
-			// clean mapping
-			HolderDrawable holder = callMap.remove(call);
+			// get mapping holder
+			ImgHolder holder = taskMap.remove(call);
 			if (holder == null)
 				throw new ParseResultFailException("cancel");
-			holderMap.remove(holder);
 
 			String md5 = holder.md5;
 			int dW = holder.dWidth;
@@ -378,22 +356,42 @@ public class ImageUtil
 			BitmapDrawable img = new BitmapDrawable(context.getResources(), bmp);
 			bmp = null;
 			saveToCache(md5, img);
-			holder.setDrawable(img);
-
-			holder = null;
-			img = null;
-			return true;
+			return new Pair<ImgHolder, Drawable>(holder, img);
 		}
 
 		@Override
 		protected void onDoneBG(Call call, Message msg)
 		{
-			HolderDrawable holder = callMap.remove(call);
-			if (holder != null)// must not be successful
+			if (msg.what != RetCode.Success.ordinal())
 			{
-				holderMap.remove(holder);
-				holder.setToFail();
+				ImgHolder holder = taskMap.get(call);
+				if (holder == null)// cacelled
+					msg.what = RetCode.Cancel.ordinal();
+				msg.obj = new Object[] { msg.obj, holder };
 			}
+		}
+
+		@Override
+		protected void onDone(Message msg)
+		{
+			switch (RetCode.values()[msg.what])
+			{
+			case Success:
+				onSuccess((Pair<ImgHolder, Drawable>) msg.obj);
+				return;
+			case Cancel:
+				return;
+			default:
+				ImgHolder holder = (ImgHolder) ((Object[]) msg.obj)[1];
+				holder.setToFail();
+				return;
+			}
+		}
+
+		@Override
+		protected void onSuccess(Pair<ImgHolder, Drawable> data)
+		{
+			data.first.setDrawable(data.second);
 		}
 
 	};

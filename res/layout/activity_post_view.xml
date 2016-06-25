@@ -39,6 +39,29 @@
                 android:textSize="16sp" />
         </android.support.v7.widget.CardView>
 
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            app:cardCornerRadius="0dp"
+            app:cardElevation="3dp"
+            app:cardUseCompatPadding="true"
+            app:contentPadding="8dp" >
+
+            <xziar.enhancer.widget.CompatRecyclerView
+                android:id="@+id/images"
+                android:layout_width="match_parent"
+                android:layout_height="96dp"
+                android:orientation="horizontal"
+                android:padding="4dp"
+                android:scrollbars="horizontal"
+                app:useDivider="false" />
+        </android.support.v7.widget.CardView>
+
+        <xziar.enhancer.widget.EmptyDividerView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
         <xziar.enhancer.widget.FloatLabelLayout
             android:id="@+id/replypart"
             android:layout_width="match_parent"

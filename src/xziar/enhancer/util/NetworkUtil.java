@@ -187,7 +187,7 @@ public class NetworkUtil
 
 		static enum RetCode
 		{
-			Timeout, Error, Fail, Success, Unsuccess
+			Timeout, Error, Fail, Success, Unsuccess, Cancel
 		}
 
 		protected NetCBHandler<D> handler;

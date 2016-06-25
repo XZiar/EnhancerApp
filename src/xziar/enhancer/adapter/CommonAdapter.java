@@ -21,7 +21,7 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends RecyclerView
 {
 	private static final String LogTag = "CommonAdapter";
 	private OnItemClickListener<TD> itemClick;
-	private TH header, footer;
+	private ArrayList<TH> headers = new ArrayList<>(), footers = new ArrayList<>();
 	protected ArrayList<Integer> resID = new ArrayList<>();
 	private Constructor<TH> THcon;
 	private HashMap<TH, TD> mapping = new HashMap<>();
@@ -57,22 +57,28 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends RecyclerView
 		}
 	}
 
-	public void setHeaderFooter(View header, View footer)
+	public void setHeaderFooter(ArrayList<View> header, ArrayList<View> footer)
 	{
-		this.header = (header == null ? null : genHolder(header));
-		this.footer = (footer == null ? null : genHolder(footer));
+		for (View v : header)
+			headers.add(genHolder(v));
+		for (View v : footer)
+			footers.add(genHolder(v));
 		notifyDataSetChanged();
 	}
 
 	public void setHeaderView(View header)
 	{
-		this.header = (header == null ? null : genHolder(header));
+		headers.clear();
+		if (header != null)
+			headers.add(genHolder(header));
 		notifyDataSetChanged();
 	}
 
 	public void setFooterView(View footer)
 	{
-		this.footer = (footer == null ? null : genHolder(footer));
+		footers.clear();
+		if (footer != null)
+			footers.add(genHolder(footer));
 		notifyDataSetChanged();
 	}
 
@@ -86,11 +92,11 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends RecyclerView
 	@Override
 	public int getItemViewType(int position)
 	{
-		int pos = position - (header == null ? 0 : 1);
+		int pos = position - headers.size();
 		if (pos < 0)// header
-			return -1;
+			return pos;
 		if (pos >= datas.size())// footer
-			return -2;
+			return 0xFFFF + pos - datas.size();
 		TD item = datas.get(pos);
 		Integer type = types.get(item);
 		return type == null ? 0 : type;
@@ -98,7 +104,7 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends RecyclerView
 
 	public int pos2idx(int pos)
 	{
-		pos -= (header == null ? 0 : 1);
+		pos -= headers.size();
 		if (pos >= datas.size())
 			return -2;
 		else
@@ -112,7 +118,7 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends RecyclerView
 		if (idx == -2)
 			return getItemCount();
 		if (idx < datas.size())
-			return idx + (header == null ? 0 : 1);
+			return idx + headers.size();
 		else
 			return getItemCount();
 	}
@@ -120,13 +126,13 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends RecyclerView
 	@Override
 	public int getItemCount()
 	{
-		return datas.size() + (header == null ? 0 : 1) + (footer == null ? 0 : 1);
+		return datas.size() + headers.size() + footers.size();
 	}
 
 	@Override
 	public void onBindViewHolder(TH holder, int position)
 	{
-		int pos = position - (header == null ? 0 : 1);
+		int pos = position - headers.size();
 		if (pos >= 0 && pos < datas.size())
 		{
 			TD item = datas.get(pos);
@@ -138,10 +144,10 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends RecyclerView
 	@Override
 	public TH onCreateViewHolder(ViewGroup parent, int viewType)
 	{
-		if (viewType == -1)
-			return header;
-		if (viewType == -2)
-			return footer;
+		if (viewType < 0)
+			return headers.get(viewType + headers.size());
+		if (viewType >= 0xFFFF)
+			return footers.get(viewType - 0xFFFF);
 		View view = inflater.inflate(resID.get(viewType), parent, false);
 		view.setOnClickListener(this);
 		return genHolder(view);
