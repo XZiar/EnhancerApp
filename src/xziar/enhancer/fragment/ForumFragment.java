@@ -56,7 +56,7 @@ public class ForumFragment extends Fragment
 		setHasOptionsMenu(true);
 		listwrap.setOnRefreshListener(this);
 		adapter = new PostAdapter(getActivity());
-		adapter.setItemClick(this);
+		adapter.setOnItemClickListener(this);
 		list.setAdapter(adapter);
 		listwrap.setRefreshing(true);
 		refreshData();

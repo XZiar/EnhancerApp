@@ -69,7 +69,7 @@ public class TaskViewActivity extends AppCompatActivity
 				AnimationUtils.loadAnimation(this, android.R.anim.slide_out_right));
 		adapter = new ApplyerAdapter(this);
 		applyerlist.setAdapter(adapter);
-		adapter.setItemClick(this);
+		adapter.setOnItemClickListener(this);
 		back.setOnClickListener(this);
 		apply.setOnClickListener(this);
 		applyDlg = new AlertDialog.Builder(this).setView(content).create();

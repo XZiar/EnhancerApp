@@ -34,7 +34,7 @@ public class GroupFragment extends Fragment implements OnItemClickListener<Group
 		actbar = ((MainActivity) getActivity()).getActbar();
 		setHasOptionsMenu(true);
 		adapter = new GroupAdapter(getActivity());
-		adapter.setItemClick(this);
+		adapter.setOnItemClickListener(this);
 		list.setAdapter(adapter);
 
 		initData();

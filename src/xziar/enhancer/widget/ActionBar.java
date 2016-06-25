@@ -30,7 +30,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import xziar.enhancer.R;
-import xziar.enhancer.util.SimpleImageUtil;
+import xziar.enhancer.util.ImageUtil;
 import xziar.enhancer.util.SizeUtil;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
@@ -163,7 +163,7 @@ public class ActionBar extends AppBarLayout implements OnClickListener
 	protected ImageButton genButton(Drawable icon)
 	{
 		ImageButton btn = genButton();
-		btn.setImageDrawable(SimpleImageUtil.tintDrawable(icon, tintColor));
+		btn.setImageDrawable(ImageUtil.tintDrawable(icon, tintColor));
 		return btn;
 	}
 
@@ -293,7 +293,7 @@ public class ActionBar extends AppBarLayout implements OnClickListener
 		ImageButton btn = findButton(menuId);
 		if (btn != null)
 		{
-			btn.setImageDrawable(SimpleImageUtil.tintDrawable(btn.getBackground(), tintColor));
+			btn.setImageDrawable(ImageUtil.tintDrawable(btn.getBackground(), tintColor));
 			btn.setOnClickListener(this);
 			return true;
 		}
@@ -305,7 +305,7 @@ public class ActionBar extends AppBarLayout implements OnClickListener
 		ImageButton btn = findButton(menuId);
 		if (btn != null)
 		{
-			btn.setImageDrawable(SimpleImageUtil.tintDrawable(btn.getDrawable(), 0xAAAAAAAA));
+			btn.setImageDrawable(ImageUtil.tintDrawable(btn.getDrawable(), 0xAAAAAAAA));
 			btn.setOnClickListener(null);
 			return true;
 		}

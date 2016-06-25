@@ -58,7 +58,7 @@ public class TaskListFragment extends Fragment
 		setHasOptionsMenu(true);
 		listwrap.setOnRefreshListener(this);
 		adapter = new TaskAdapter(getActivity());
-		adapter.setItemClick(this);
+		adapter.setOnItemClickListener(this);
 		list.setAdapter(adapter);
 		listwrap.setRefreshing(true);
 		refreshData();

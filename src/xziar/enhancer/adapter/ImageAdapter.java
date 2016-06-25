@@ -3,20 +3,18 @@ package xziar.enhancer.adapter;
 import java.util.ArrayList;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import xziar.enhancer.R;
 import xziar.enhancer.util.ImageUtil.ImgHolder;
 import xziar.enhancer.util.ImageUtil.ImgViewHolder;
-import xziar.enhancer.util.ImageUtil.OnLoadedCallback;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 
 public class ImageAdapter extends CommonAdapter<ImgHolder, ImageAdapter.ImageHolder>
 {
-	static class ImageHolder extends CommonHolder<ImgHolder> implements OnLoadedCallback
+	static class ImageHolder extends CommonHolder<ImgHolder>
 	{
 		@BindView
 		private ImageView pic;
@@ -27,7 +25,6 @@ public class ImageAdapter extends CommonAdapter<ImgHolder, ImageAdapter.ImageHol
 			super(itemView);
 			ViewInject.inject(this);
 			holder = new ImgViewHolder(pic);
-			holder.setOnLoadedCallback(this);
 		}
 
 		@Override
@@ -35,13 +32,6 @@ public class ImageAdapter extends CommonAdapter<ImgHolder, ImageAdapter.ImageHol
 		{
 			Log.v("CommonH", "setData:" + data);
 			holder.getDrawable(data);
-		}
-
-		@Override
-		public void callback(ImgHolder holder, Drawable img)
-		{
-			Log.v("CommonH", "rfsData:" + img + " from " + holder);
-			pic.setImageDrawable(img);
 		}
 
 	}

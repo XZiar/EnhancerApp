@@ -13,9 +13,12 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 
+import android.content.ComponentCallbacks2;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
 import android.graphics.Canvas;
@@ -24,6 +27,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Message;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.util.Pair;
 import android.util.Log;
 import android.util.LruCache;
@@ -37,26 +43,33 @@ import xziar.enhancer.R;
 import xziar.enhancer.util.NetworkUtil.NetCBHandler;
 import xziar.enhancer.util.NetworkUtil.NetTask;
 
-public class ImageUtil
+public class ImageUtil implements ComponentCallbacks2
 {
 	static final String LogTag = "ImageUtil";
 	private static final Context context;
 	private static File cacheDir;
 	private static final ImageTasker mainTasker = new ImageTasker();
-	private static final LruCache<String, BitmapDrawable> memCache;
-	private static final int maxPerSize;
+	private static LruCache<String, Drawable> memCache;
+	private static final int maxPerSize, maxSize;
 
 	static
 	{
 		context = BaseApplication.getContext();
-		int maxSize = (int) (Runtime.getRuntime().maxMemory() / 8);
+		context.registerComponentCallbacks(new ImageUtil());
+		maxSize = (int) (Runtime.getRuntime().maxMemory() / 4);
 		maxPerSize = maxSize / 16;
-		memCache = new LruCache<String, BitmapDrawable>(maxSize)
+		memCache = new LruCache<String, Drawable>(maxSize)
 		{
 			@Override
-			protected int sizeOf(String key, BitmapDrawable value)
+			protected int sizeOf(String key, Drawable value)
 			{
-				Bitmap bmp = value.getBitmap();
+				Bitmap bmp;
+				if (value instanceof BitmapDrawable)
+					bmp = ((BitmapDrawable) value).getBitmap();
+				else if (value instanceof RoundedBitmapDrawable)
+					bmp = ((RoundedBitmapDrawable) value).getBitmap();
+				else
+					throw new IllegalArgumentException("unsupported format: " + value.getClass());
 				return bmp.getByteCount();
 			}
 
@@ -74,12 +87,17 @@ public class ImageUtil
 	{
 		if (img != null)
 		{
-			if (img.getBitmap().getByteCount() > maxPerSize)
-				Log.d(LogTag, "too large to save in cache");
+			Bitmap bmp = img.getBitmap();
+			if (bmp.getByteCount() > maxPerSize)
+				Log.d(LogTag, md5 + " too large to save in cache: " + bmp.getRowBytes() + "*"
+						+ bmp.getHeight());
 			else
+			{
+				Log.d(LogTag, md5 + " done save to cache: " + bmp.getByteCount());
 				memCache.put(md5, img);
+			}
 		}
-		Log.d(LogTag, "save to cache: " + md5);
+
 	}
 
 	protected static void saveToDisk(String md5, Drawable img)
@@ -109,7 +127,7 @@ public class ImageUtil
 		}
 	}
 
-	protected static File saveToDisk(String md5, InputStream ins) throws IOException
+	protected static void saveToDisk(String md5, InputStream ins) throws IOException
 	{
 		try
 		{
@@ -119,7 +137,7 @@ public class ImageUtil
 			ins.close();
 			fos.close();
 			Log.d(LogTag, "save to disk: " + md5);
-			return f;
+			return;
 		}
 		catch (IOException e)
 		{
@@ -130,12 +148,14 @@ public class ImageUtil
 
 	protected static BitmapDrawable readFromCache(String md5)
 	{
-		BitmapDrawable img = memCache.get(md5);
+		BitmapDrawable img = (BitmapDrawable) memCache.get(md5);
 		if (img == null)
 			Log.v(LogTag, "miss on cache: " + md5);
 		else
+		{
 			Log.d(LogTag, "load from cache: " + md5);
-		Log.w("LRU", "count : " + memCache.hitCount() + "/" + memCache.missCount());
+			Log.d("LRU", "count : " + memCache.hitCount() + "/" + memCache.missCount());
+		}
 		return img;
 	}
 
@@ -162,18 +182,73 @@ public class ImageUtil
 		return null;
 	}
 
-	protected static BitmapDrawable fetchImage(String md5)
+	private static boolean leanReadFromDisk(String md5)
 	{
-		BitmapDrawable img = readFromCache(md5);
-		if (img == null)
+		File f = new File(cacheDir, md5 + ".png");
+		if (!f.exists())
 		{
-			img = readFromDisk(md5);
-			if (img != null)
-			{
-				saveToCache(md5, img);
-			}
+			Log.v(LogTag, "miss on disk: " + md5);
+			return false;
 		}
+		Options opt = new Options();
+		opt.inJustDecodeBounds = true;
+		Bitmap bmp = BitmapFactory.decodeFile(f.getAbsolutePath(), opt);
+		int preSize = opt.outWidth * opt.outHeight * 4;
+		if (preSize > maxPerSize)
+			return true;
+		Log.d(LogTag, "load from disk(lean): " + md5);
+		bmp = BitmapFactory.decodeFile(f.getAbsolutePath(), opt);
+		if (bmp == null)
+			return false;
+		if (!bmp.hasAlpha())
+		{
+			Log.d(LogTag, "reload for non-alpha one");
+			opt.inPreferredConfig = Config.RGB_565;
+			bmp = BitmapFactory.decodeFile(f.getAbsolutePath(), opt);
+		}
+		BitmapDrawable img = new BitmapDrawable(context.getResources(), bmp);
+		bmp = null;
+		saveToCache(md5, img);
+		return true;
+	}
+
+	protected static BitmapDrawable readFromDisk(String md5, int dWidth)
+	{
+		File f = new File(cacheDir, md5 + ".png");
+		if (!f.exists())
+		{
+			Log.v(LogTag, "miss on disk: " + md5);
+			return null;
+		}
+		Options opt = new Options();
+		opt.inJustDecodeBounds = true;
+		Bitmap bmp = BitmapFactory.decodeFile(f.getAbsolutePath(), opt);
+		opt.inJustDecodeBounds = false;
+		opt.inSampleSize = Math.max(1, opt.outWidth / dWidth);
+		Log.d(LogTag, "load from disk: " + md5 + " with sample " + opt.inSampleSize + ", "
+				+ opt.outWidth + "/" + dWidth);
+		bmp = BitmapFactory.decodeFile(f.getAbsolutePath(), opt);
+		if (!bmp.hasAlpha())
+		{
+			Log.d(LogTag, "reload for non-alpha one");
+			opt.inPreferredConfig = Config.RGB_565;
+			bmp = BitmapFactory.decodeFile(f.getAbsolutePath(), opt);
+		}
+		BitmapDrawable img = new BitmapDrawable(context.getResources(), bmp);
+		bmp = null;
+		saveToCache(md5, img);
 		return img;
+	}
+
+	public static void leanCacheImage(String where, ImgHolder object)
+	{
+		if (where == null)
+			return;
+		if (readFromCache(object.md5) != null || leanReadFromDisk(object.md5) == true)
+			return;
+
+		mainTasker.downloadPic(object, where);
+		return;
 	}
 
 	public static void loadImage(String where, ImgHolder object)
@@ -187,16 +262,43 @@ public class ImageUtil
 		img = readFromCache(object.md5);
 		if (img == null)
 		{
-			img = readFromDisk(object.md5);
-			if (img != null)
-				saveToCache(object.md5, img);
-			else
+			img = readFromDisk(object.md5, object.dWidth);
+			if (img == null)
 			{
 				mainTasker.downloadPic(object, where);
 				return;
 			}
 		}
 		object.setDrawable(img);
+	}
+
+	public static RoundedBitmapDrawable getCircleDrawable(int resID)
+	{
+		RoundedBitmapDrawable img = (RoundedBitmapDrawable) memCache.get("" + resID);
+		if (img != null)
+			return img;
+		// create new
+		Bitmap src = BitmapFactory.decodeResource(context.getResources(), resID);
+		int ds = src.getWidth() - src.getHeight();
+		int size = Math.min(src.getWidth(), src.getHeight());
+		if (ds != 0)// crop
+		{
+			src = Bitmap.createBitmap(src, ds > 0 ? ds / 2 : 0, ds > 0 ? 0 : ds / -2, size, size);
+		}
+		img = RoundedBitmapDrawableFactory.create(context.getResources(), src);
+		img.setCornerRadius(size / 2);
+		img.setAntiAlias(true);
+		memCache.put(String.valueOf(resID), img);
+		Log.d("CircleImageUtil",
+				"cache drawable: " + context.getResources().getResourceEntryName(resID));
+		return img;
+	}
+
+	public static Drawable tintDrawable(Drawable drawable, int color)
+	{
+		final Drawable newDrawable = DrawableCompat.wrap(drawable).mutate();
+		DrawableCompat.setTint(newDrawable, color);
+		return newDrawable;
 	}
 
 	public static interface OnLoadedCallback
@@ -206,7 +308,7 @@ public class ImageUtil
 
 	public static class ImgHolder
 	{
-		private static final String LogTag = "HolderDrawable";
+		private static final String LogTag = "ImgHolder";
 		public static final Drawable preImg = ContextCompat.getDrawable(context,
 				R.drawable.icon_image_holder);
 		private static final Drawable failImg = ContextCompat.getDrawable(context,
@@ -216,7 +318,7 @@ public class ImageUtil
 
 		protected WeakReference<OnLoadedCallback> callback;
 
-		protected int dWidth = 0;
+		protected int dWidth = 1000;
 		public String md5, url;
 
 		static
@@ -264,12 +366,15 @@ public class ImageUtil
 		{
 			super();
 			this.view = view;
-			this.dWidth = view.getMaxWidth();
+			setOnLoadedCallback(this);
 		}
 
 		public void getDrawable(ImgHolder obj)
 		{
 			md5 = obj.md5;
+			dWidth = view.getWidth();
+			if (dWidth == 0)
+				dWidth = 1000;
 			ImageUtil.loadImage(obj.url, this);
 		}
 
@@ -346,16 +451,8 @@ public class ImageUtil
 
 			String md5 = holder.md5;
 			int dW = holder.dWidth;
-			File file = saveToDisk(md5, data.byteStream());
-			Options opt = new Options();
-			opt.inJustDecodeBounds = true;
-			Bitmap bmp = BitmapFactory.decodeFile(file.getAbsolutePath(), opt);
-			opt.inJustDecodeBounds = false;
-			opt.inSampleSize = Math.max(1, opt.outWidth / dW);
-			bmp = BitmapFactory.decodeFile(file.getAbsolutePath(), opt);
-			BitmapDrawable img = new BitmapDrawable(context.getResources(), bmp);
-			bmp = null;
-			saveToCache(md5, img);
+			saveToDisk(md5, data.byteStream());
+			Drawable img = readFromDisk(md5, holder.dWidth);
 			return new Pair<ImgHolder, Drawable>(holder, img);
 		}
 
@@ -371,6 +468,7 @@ public class ImageUtil
 			}
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		protected void onDone(Message msg)
 		{
@@ -392,6 +490,32 @@ public class ImageUtil
 		protected void onSuccess(Pair<ImgHolder, Drawable> data)
 		{
 			data.first.setDrawable(data.second);
+		}
+
+	}
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig)
+	{
+	}
+
+	@Override
+	public void onLowMemory()
+	{
+	}
+
+	@Override
+	public void onTrimMemory(int level)
+	{
+		Log.w(LogTag, "need to trim memmory: level " + level);
+		switch (level)
+		{
+		case TRIM_MEMORY_COMPLETE:
+		case TRIM_MEMORY_BACKGROUND:
+			memCache = new LruCache<String, Drawable>(maxSize);
+			break;
+		default:
+			break;
 		}
 
 	};

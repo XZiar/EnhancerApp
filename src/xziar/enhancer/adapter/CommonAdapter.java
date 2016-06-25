@@ -159,9 +159,15 @@ public class CommonAdapter<TD, TH extends CommonHolder<TD>> extends RecyclerView
 		return 0;
 	}
 
-	public void setItemClick(OnItemClickListener<TD> itemClick)
+	public void setOnItemClickListener(OnItemClickListener<TD> itemClick)
 	{
 		this.itemClick = itemClick;
+	}
+
+	public void performItemClick(int idx)
+	{
+		if (itemClick != null)
+			itemClick.OnClick(datas.get(idx));
 	}
 
 	@Override

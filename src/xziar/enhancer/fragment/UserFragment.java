@@ -23,10 +23,10 @@ import xziar.enhancer.activity.MainActivity;
 import xziar.enhancer.pojo.AccountBean.Role;
 import xziar.enhancer.pojo.UserBean;
 import xziar.enhancer.util.BaseApplication;
+import xziar.enhancer.util.ImageUtil;
 import xziar.enhancer.util.NetworkUtil;
 import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.NetworkUtil.NetTask;
-import xziar.enhancer.util.SimpleImageUtil;
 import xziar.enhancer.util.ViewInject;
 import xziar.enhancer.util.ViewInject.BindView;
 import xziar.enhancer.util.ViewInject.ObjView;
@@ -154,7 +154,7 @@ public class UserFragment extends Fragment
 		if (user == null)
 		{
 			actbar.delMenu(R.id.action_logout);
-			headimg.setImageDrawable(SimpleImageUtil.getCircleDrawable(R.drawable.defaulthead));
+			headimg.setImageDrawable(ImageUtil.getCircleDrawable(R.drawable.defaulthead));
 			name.setText("Î´µÇÂ¼");
 			des.setText("");
 			score.setVal("*");
@@ -166,7 +166,7 @@ public class UserFragment extends Fragment
 		{
 			actbar.delMenu(R.id.action_login);
 			headimg.setImageDrawable(
-					SimpleImageUtil.getCircleDrawable(user.getAccountRole() == Role.company
+					ImageUtil.getCircleDrawable(user.getAccountRole() == Role.company
 							? R.drawable.companyhead : R.drawable.studenthead));
 			name.setText(user.getName());
 			des.setText(user.getDescribe());

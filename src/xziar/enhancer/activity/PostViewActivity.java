@@ -12,10 +12,12 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 import xziar.enhancer.R;
+import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.adapter.ImageAdapter;
 import xziar.enhancer.adapter.ReplyAdapter;
 import xziar.enhancer.pojo.PostBean;
 import xziar.enhancer.pojo.ReplyBean;
+import xziar.enhancer.util.ImageUtil.ImgHolder;
 import xziar.enhancer.util.NetworkUtil.NetBeanTask;
 import xziar.enhancer.util.NetworkUtil.NetBeansTask;
 import xziar.enhancer.util.RichTextUtil.RTwrapper;
@@ -26,7 +28,8 @@ import xziar.enhancer.widget.CompatRecyclerView;
 import xziar.enhancer.widget.FloatLabelLayout;
 import xziar.enhancer.widget.RichTextEditor;
 
-public class PostViewActivity extends AppCompatActivity implements OnClickListener
+public class PostViewActivity extends AppCompatActivity
+		implements OnClickListener, OnItemClickListener<ImgHolder>
 {
 	private static enum reqCode
 	{
@@ -37,7 +40,7 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 	private ReplyAdapter adapter;
 	private ImageAdapter imgadapter;
 	private ArrayList<ReplyBean> replys = new ArrayList<>();
-	RTwrapper wrapper;
+	private RTwrapper wrapper;
 	@BindView
 	private FloatLabelLayout replypart;
 	@BindView(onClick = "this")
@@ -67,7 +70,8 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 		imgadapter = new ImageAdapter(this);
 		comments.setAdapter(adapter);
 		images.setAdapter(imgadapter);
-		wrapper = new RTwrapper(describe, imgadapter);
+		imgadapter.setOnItemClickListener(this);
+		wrapper = new RTwrapper(this, describe, imgadapter);
 		refreshView();
 		int pid = getIntent().getIntExtra("pid", -1);
 		viewTask.post("pid", pid);
@@ -171,5 +175,12 @@ public class PostViewActivity extends AppCompatActivity implements OnClickListen
 			replyTask.post("pid", post.getPid());
 		}
 	};
+
+	@Override
+	public void OnClick(ImgHolder data)
+	{
+		// TODO Auto-generated method stub
+
+	}
 
 }
