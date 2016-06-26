@@ -43,7 +43,7 @@ import xziar.enhancer.R;
 
 public class NetworkUtil
 {
-	static final String LogTag = "NetworkUtil";
+	public static final String LogTag = "NetworkUtil";
 	private static final Context context;
 	private static final ArrayList<Pair<HttpUrl, OkHttpClient>> profiles = new ArrayList<>();
 	private static final String[] choices;

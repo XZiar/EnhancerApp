@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import xziar.enhancer.R;
 import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
-import xziar.enhancer.adapter.ImageAdapter;
 import xziar.enhancer.adapter.ReplyAdapter;
 import xziar.enhancer.pojo.PostBean;
 import xziar.enhancer.pojo.ReplyBean;
@@ -38,7 +37,6 @@ public class PostViewActivity extends AppCompatActivity
 
 	private PostBean post;
 	private ReplyAdapter adapter;
-	private ImageAdapter imgadapter;
 	private ArrayList<ReplyBean> replys = new ArrayList<>();
 	private RTwrapper wrapper;
 	@BindView
@@ -67,11 +65,8 @@ public class PostViewActivity extends AppCompatActivity
 		actbar.setBackButton(true);
 
 		adapter = new ReplyAdapter(this);
-		imgadapter = new ImageAdapter(this);
 		comments.setAdapter(adapter);
-		images.setAdapter(imgadapter);
-		imgadapter.setOnItemClickListener(this);
-		wrapper = new RTwrapper(this, describe, imgadapter);
+		wrapper = new RTwrapper(this, describe, images);
 		refreshView();
 		int pid = getIntent().getIntExtra("pid", -1);
 		viewTask.post("pid", pid);

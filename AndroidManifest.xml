@@ -38,6 +38,8 @@
         <activity
             android:name=".activity.AddPostActivity"
             android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".activity.TaskOgActivity" />
+        <activity android:name=".activity.TaskFnActivity" />
     </application>
 
 </manifest>

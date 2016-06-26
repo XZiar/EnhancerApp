@@ -20,6 +20,8 @@ import android.widget.Toast;
 import xziar.enhancer.R;
 import xziar.enhancer.activity.LoginActivity;
 import xziar.enhancer.activity.MainActivity;
+import xziar.enhancer.activity.TaskFnActivity;
+import xziar.enhancer.activity.TaskOgActivity;
 import xziar.enhancer.pojo.AccountBean.Role;
 import xziar.enhancer.pojo.UserBean;
 import xziar.enhancer.util.BaseApplication;
@@ -39,7 +41,7 @@ public class UserFragment extends Fragment
 {
 	private static enum reqCode
 	{
-		login, chghead
+		login, chghead, ongoing, finish
 	}
 
 	private View view;
@@ -51,7 +53,7 @@ public class UserFragment extends Fragment
 	private LinearLayout loginarea, oparea;
 	@BindView
 	private ImageView headimg;
-	@BindView
+	@BindView(onClick = "this")
 	private NumberBox score, task_finish, task_ongoing;
 	@BindView(onClick = "this")
 	private TextView name, des, chgpwd, mypost, myreply, about;
@@ -60,7 +62,7 @@ public class UserFragment extends Fragment
 	private void initDialog(Context context)
 	{
 		logoutDlg = new AlertDialog.Builder(context).setTitle("退出登录").setMessage("确定退出登录吗？")
-				.setPositiveButton("OK", this).setNegativeButton("CANCEL", null).create();
+				.setPositiveButton("退出", this).setNegativeButton("取消", null).create();
 
 		View chgpwdView = LayoutInflater.from(context).inflate(R.layout.dialog_chginfo, null);
 		oldpwd = (EditText) chgpwdView.findViewById(R.id.oldpwd);
@@ -227,6 +229,16 @@ public class UserFragment extends Fragment
 		}
 		else if (v == about)
 			aboutDlg.show();
+		else if (v == task_ongoing)
+		{
+			Intent it = new Intent(getActivity(), TaskOgActivity.class);
+			startActivityForResult(it, reqCode.ongoing.ordinal());
+		}
+		else if (v == task_finish)
+		{
+			Intent it = new Intent(getActivity(), TaskFnActivity.class);
+			startActivityForResult(it, reqCode.finish.ordinal());
+		}
 	}
 
 	@Override

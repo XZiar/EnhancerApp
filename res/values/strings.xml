@@ -3,5 +3,13 @@
 
     <string name="app_name">EnhancerApp</string>
     <string name="hello_world">Hello world!</string>
+    
+    <string-array name="scores">
+        <item>1分</item>
+        <item>2分</item>
+        <item>3分</item>
+        <item>4分</item>
+        <item>5分</item>
+    </string-array>
 
 </resources>

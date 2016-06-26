@@ -27,6 +27,7 @@ import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.adapter.ImageAdapter;
 import xziar.enhancer.util.ImageUtil.ImgHolder;
 import xziar.enhancer.util.ImageUtil.ImgViewHolder;
+import xziar.enhancer.widget.CompatRecyclerView;
 
 public class RichTextUtil
 {
@@ -87,7 +88,6 @@ public class RichTextUtil
 			}
 			ispans = null;
 			wrapper.view.post(wrapper);
-			wrapper.adapter.refresh(wrapper.images);
 		}
 	}
 
@@ -97,6 +97,7 @@ public class RichTextUtil
 		private ImgGetter getter;
 		private SpannableString ss;
 		private TextView view;
+		private CompatRecyclerView reView;
 		private ImageView pic;
 		private ImageButton close;
 		private ImageAdapter adapter;
@@ -105,12 +106,14 @@ public class RichTextUtil
 		private ImgViewHolder holder;
 		private Thread goLoadImg;
 
-		public RTwrapper(Context context, TextView view, ImageAdapter adapter)
+		public RTwrapper(Context context, TextView view, CompatRecyclerView reView)
 		{
 			this.view = view;
+			this.reView = reView;
 			view.setMovementMethod(LinkMovementMethod.getInstance());
-			this.adapter = adapter;
+			adapter = new ImageAdapter(context);
 			adapter.setOnItemClickListener(this);
+			reView.setAdapter(adapter);
 			getter = new ImgGetter();
 			goLoadImg = new Thread(new ImgLoader(this));
 
@@ -177,6 +180,11 @@ public class RichTextUtil
 		{
 			view.setText(ss);
 			Log.d(LogTag, "refresh text");
+			if (images.size() == 0)
+				reView.setVisibility(View.GONE);
+			else
+				reView.setVisibility(View.VISIBLE);
+			adapter.refresh(images);
 		}
 	}
 }
