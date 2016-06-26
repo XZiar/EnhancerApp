@@ -132,8 +132,8 @@ public class ForumFragment extends Fragment
 		refreshData();
 	}
 
-	private NetBeansTask<PostBean> listTask = new NetBeansTask<PostBean>("/forum", "posts",
-			PostBean.class)
+	private NetBeansTask<PostBean> listTask = new NetBeansTask<PostBean>("/forum?from=0&perpage=30",
+			"posts", PostBean.class)
 	{
 		@Override
 		protected void onDone(Message msg)

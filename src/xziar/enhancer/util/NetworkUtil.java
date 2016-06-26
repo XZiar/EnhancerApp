@@ -109,7 +109,7 @@ public class NetworkUtil
 			OkHttpClient aClient = builder.build();
 			profiles.add(new Pair<HttpUrl, OkHttpClient>(aUrl, aClient));
 		}
-		Pair<HttpUrl, OkHttpClient> obj = profiles.get(0);
+		Pair<HttpUrl, OkHttpClient> obj = profiles.get(2);
 		baseUrl = obj.first;
 		client = obj.second;
 	}

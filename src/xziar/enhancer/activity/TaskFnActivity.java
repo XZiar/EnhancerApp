@@ -24,7 +24,6 @@ import okhttp3.ResponseBody;
 import xziar.enhancer.R;
 import xziar.enhancer.adapter.CommonHolder.OnItemClickListener;
 import xziar.enhancer.adapter.TaskAdapter;
-import xziar.enhancer.pojo.AccountBean.Role;
 import xziar.enhancer.pojo.TaskBean;
 import xziar.enhancer.pojo.TaskBean.Status;
 import xziar.enhancer.util.NetworkUtil;
@@ -38,7 +37,6 @@ import xziar.enhancer.widget.CompatRecyclerView;
 public class TaskFnActivity extends AppCompatActivity
 		implements OnClickListener, OnItemClickListener<TaskBean>, DialogInterface.OnClickListener
 {
-	private boolean isStu;
 	private ArrayList<TaskBean> tasks;
 	private TaskBean task;
 	private AlertDialog finishDlg, commentDlg;
@@ -80,7 +78,6 @@ public class TaskFnActivity extends AppCompatActivity
 		list.setAdapter(adapter);
 		adapter.setOnItemClickListener(this);
 		viewTask.post();
-		isStu = MainActivity.user.getAccountRole() == Role.student;
 		initDialog();
 	}
 

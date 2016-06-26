@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical" >
+
+    <xziar.enhancer.widget.ActionBar
+        android:id="@+id/actbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:title="我发布的任务" />
+
+    <xziar.contacts.widget.CustomEditText
+        android:id="@+id/search_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:background="@drawable/bg_search_input"
+        android:drawableLeft="@drawable/icon_search"
+        android:drawablePadding="2dp"
+        android:drawableRight="@drawable/icon_del"
+        android:freezesText="true"
+        android:gravity="center_vertical"
+        android:hint="搜索"
+        android:imeOptions="actionSearch"
+        android:singleLine="true"
+        android:textColor="@android:color/black"
+        android:textColorHint="#ffb5b5b5"
+        android:textSize="14sp" />
+
+    <xziar.enhancer.widget.CompatRecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:scrollbars="vertical" >
+    </xziar.enhancer.widget.CompatRecyclerView>
+
+</android.support.design.widget.CoordinatorLayout>

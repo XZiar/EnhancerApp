@@ -20,6 +20,8 @@ import android.widget.Toast;
 import xziar.enhancer.R;
 import xziar.enhancer.activity.LoginActivity;
 import xziar.enhancer.activity.MainActivity;
+import xziar.enhancer.activity.MyPostActivity;
+import xziar.enhancer.activity.MyTaskActivity;
 import xziar.enhancer.activity.TaskFnActivity;
 import xziar.enhancer.activity.TaskOgActivity;
 import xziar.enhancer.pojo.AccountBean.Role;
@@ -41,7 +43,7 @@ public class UserFragment extends Fragment
 {
 	private static enum reqCode
 	{
-		login, chghead, ongoing, finish
+		login, chghead, ongoing, finish, mypost, mytask
 	}
 
 	private View view;
@@ -56,7 +58,7 @@ public class UserFragment extends Fragment
 	@BindView(onClick = "this")
 	private NumberBox score, task_finish, task_ongoing;
 	@BindView(onClick = "this")
-	private TextView name, des, chgpwd, mypost, myreply, about;
+	private TextView name, des, chgpwd, mypost, mytask, about;
 
 	@SuppressLint("InflateParams")
 	private void initDialog(Context context)
@@ -167,9 +169,16 @@ public class UserFragment extends Fragment
 		else
 		{
 			actbar.delMenu(R.id.action_login);
-			headimg.setImageDrawable(
-					ImageUtil.getCircleDrawable(user.getAccountRole() == Role.company
-							? R.drawable.companyhead : R.drawable.studenthead));
+			if (user.getAccountRole() == Role.company)
+			{
+				headimg.setImageDrawable(ImageUtil.getCircleDrawable(R.drawable.companyhead));
+				mytask.setVisibility(View.VISIBLE);
+			}
+			else
+			{
+				headimg.setImageDrawable(ImageUtil.getCircleDrawable(R.drawable.studenthead));
+				mytask.setVisibility(View.GONE);
+			}
 			name.setText(user.getName());
 			des.setText(user.getDescribe());
 			score.setVal(user.getScore());
@@ -238,6 +247,16 @@ public class UserFragment extends Fragment
 		{
 			Intent it = new Intent(getActivity(), TaskFnActivity.class);
 			startActivityForResult(it, reqCode.finish.ordinal());
+		}
+		else if (v == mypost)
+		{
+			Intent it = new Intent(getActivity(), MyPostActivity.class);
+			startActivityForResult(it, reqCode.mypost.ordinal());
+		}
+		else if (v == mytask)
+		{
+			Intent it = new Intent(getActivity(), MyTaskActivity.class);
+			startActivityForResult(it, reqCode.mytask.ordinal());
 		}
 	}
 

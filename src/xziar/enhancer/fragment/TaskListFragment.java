@@ -153,8 +153,8 @@ public class TaskListFragment extends Fragment
 		listTask.post("from", 0);
 	}
 
-	private NetBeansTask<TaskBean> listTask = new NetBeansTask<TaskBean>("/task", "tasks",
-			TaskBean.class)
+	private NetBeansTask<TaskBean> listTask = new NetBeansTask<TaskBean>("/task?from=0&perpage=30",
+			"tasks", TaskBean.class)
 	{
 		@Override
 		protected void onDone(Message msg)

@@ -50,13 +50,13 @@
         android:textSize="14sp" />
 
     <TextView
+        android:id="@+id/details"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:ellipsize="end"
-        android:singleLine="true"
-        android:text="the detail one"
+        android:text="members"
         android:textColor="#474747"
-        android:textSize="18sp" />
+        android:textSize="14sp" />
 
 </LinearLayout>

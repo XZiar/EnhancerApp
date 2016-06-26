@@ -13,7 +13,7 @@ public class GroupAdapter extends CommonAdapter<GroupBean, GroupAdapter.GroupHol
 	static class GroupHolder extends CommonHolder<GroupBean>
 	{
 		@BindView
-		private TextView name, people, describe;
+		private TextView name, people, describe, details;
 
 		public GroupHolder(View itemView)
 		{
@@ -27,6 +27,15 @@ public class GroupAdapter extends CommonAdapter<GroupBean, GroupAdapter.GroupHol
 			name.setText(data.getName());
 			describe.setText(data.getDescribe());
 			people.setText(data.getPeople() + "ÈË");
+			if (details != null)
+			{
+				String txt = data.getStus().get(0);
+				for (int a = 1; a < data.getStus().size(); a++)
+				{
+					txt += "\n" + data.getStus().get(1);
+				}
+				details.setText(txt);
+			}
 		}
 
 	}

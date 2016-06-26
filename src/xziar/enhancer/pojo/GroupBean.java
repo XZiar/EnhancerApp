@@ -1,5 +1,6 @@
 package xziar.enhancer.pojo;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GroupBean extends UserBean
@@ -9,8 +10,9 @@ public class GroupBean extends UserBean
 		leader, member;
 	}
 	
-	private HashMap<Integer,Role> members = new HashMap<>();
+	public HashMap<String, Role> members = new HashMap<>();
 	private int leaderID = -1;
+	private ArrayList<String> stus = new ArrayList<>();
 	
 	public GroupBean(AccountBean account)
 	{
@@ -19,17 +21,17 @@ public class GroupBean extends UserBean
 
 	public void addMember(int muid, int role)
 	{
-		members.put(muid, Role.values()[role]);
+		members.put("" + muid, Role.values()[role]);
 		if(Role.leader.ordinal() == role)
 			setLeaderID(muid);
 	}
 	
-	public HashMap<Integer, Role> getMembers()
+	public HashMap<String, Role> getMembers()
 	{
 		return members;
 	}
 
-	public void setMembers(HashMap<Integer, Role> members)
+	public void setMembers(HashMap<String, Role> members)
 	{
 		this.members = members;
 	}
@@ -48,5 +50,15 @@ public class GroupBean extends UserBean
 	public void setLeaderID(int leaderID)
 	{
 		this.leaderID = leaderID;
+	}
+
+	public ArrayList<String> getStus()
+	{
+		return stus;
+	}
+
+	public void setStus(ArrayList<String> stus)
+	{
+		this.stus = stus;
 	}
 }
